@@ -141,7 +141,7 @@ class LiveInteractionSession:
             print(f"🤖 Initializing {self.config.user_model_id} (Bedrock) as simulated user...")
             user_prompt = self.config.user_system_prompt or ""
             if self.config.hangup_prompt_enabled and HANGUP_SIGNAL not in user_prompt:
-                hangup_postamble = f"\n\nWhen you have completed your goal or are satisfied with the conversation, end by saying only {HANGUP_SIGNAL}."
+                hangup_postamble = f"\n\nAfter you have actually spoken with the assistant and completed your goal, end a later turn by saying only {HANGUP_SIGNAL}. Never begin the conversation with {HANGUP_SIGNAL}."
                 user_prompt = user_prompt.rstrip() + hangup_postamble
             self.claude = BedrockModelClient(
                 model=self.config.user_model_id,
@@ -515,12 +515,30 @@ class LiveInteractionSession:
                     break
 
             # Check if the user simulator signaled a hangup
-            if HANGUP_SIGNAL in user_message:
-                reason = "Customer hung up"
-                print(f"\n📞 {reason} (turn {turn + 1})")
-                if self.logger:
-                    self.logger.add_event("hangup", {"reason": reason, "turn": turn + 1})
-                break
+            if HANGUP_SIGNAL in (user_message or ""):
+                leftover = (user_message or "").replace(HANGUP_SIGNAL, "").strip()
+                if turn == 0:
+                    if not leftover:
+                        print("⚠️  User simulator ended on turn 1; retrying the opening line")
+                        retry_context = initial_context + " Do not end the conversation yet. Speak your first request now and do not output [HANGUP]."
+                        user_message = self.claude.generate_response(retry_context)
+                        leftover = (user_message or "").replace(HANGUP_SIGNAL, "").strip()
+                    if leftover:
+                        if HANGUP_SIGNAL in (user_message or ""):
+                            print("⚠️  Ignoring first-turn [HANGUP] in the user simulator output")
+                        user_message = leftover
+                    else:
+                        reason = "Customer hung up"
+                        print(f"\n📞 {reason} (turn {turn + 1})")
+                        if self.logger:
+                            self.logger.add_event("hangup", {"reason": reason, "turn": turn + 1})
+                        break
+                else:
+                    reason = "Customer hung up"
+                    print(f"\n📞 {reason} (turn {turn + 1})")
+                    if self.logger:
+                        self.logger.add_event("hangup", {"reason": reason, "turn": turn + 1})
+                    break
 
             # Run the turn
             await self.run_turn(user_message)
