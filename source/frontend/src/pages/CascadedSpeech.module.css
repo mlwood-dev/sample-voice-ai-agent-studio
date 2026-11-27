@@ -160,3 +160,9 @@
   font-weight: 600;
   font-size: 16px;
 }
+
+@media (max-width: 767px) {
+  .presets { grid-template-columns: 1fr; }
+  .modelGrid { grid-template-columns: 1fr; }
+  .pipelinePreview { flex-wrap: wrap; }
+}

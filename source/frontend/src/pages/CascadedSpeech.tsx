@@ -110,7 +110,7 @@ function CascadedSpeech() {
               Speech-to-Text (STT)
             </label>
             <div className={styles.modelOptions}>
-              {STT_OPTIONS.map((opt) => (
+              {STT_OPTIONS.filter((opt) => opt.provider !== '3P').map((opt) => (
                 <button
                   key={opt.id}
                   className={`${styles.modelBtn} ${
@@ -164,7 +164,7 @@ function CascadedSpeech() {
               Text-to-Speech (TTS)
             </label>
             <div className={styles.modelOptions}>
-              {TTS_OPTIONS.map((opt) => (
+              {TTS_OPTIONS.filter((opt) => opt.provider !== '3P').map((opt) => (
                 <button
                   key={opt.id}
                   className={`${styles.modelBtn} ${
@@ -187,6 +187,31 @@ function CascadedSpeech() {
           </div>
         </div>
 
+        <details style={{ margin: '8px 0 20px' }}>
+          <summary style={{ cursor: 'pointer', fontWeight: 600, fontSize: 14 }}>Other providers</summary>
+          <div className={styles.modelOptions} style={{ marginTop: 12 }}>
+            {STT_OPTIONS.filter((opt) => opt.provider === '3P').map((opt) => (
+              <button
+                key={opt.id}
+                className={`${styles.modelBtn} ${state.cascaded.sttProvider === opt.id ? styles.modelSelected : ''}`}
+                onClick={() => dispatch({ type: 'SET_CASCADED', payload: { sttProvider: opt.id, preset: 'custom' } })}
+              >
+                <span className={styles.modelLabel}>{opt.label}</span>
+                <span className={styles.providerBadge}>{opt.provider} · STT</span>
+              </button>
+            ))}
+            {TTS_OPTIONS.filter((opt) => opt.provider === '3P').map((opt) => (
+              <button
+                key={opt.id}
+                className={`${styles.modelBtn} ${state.cascaded.ttsProvider === opt.id ? styles.modelSelected : ''}`}
+                onClick={() => dispatch({ type: 'SET_CASCADED', payload: { ttsProvider: opt.id, preset: 'custom' } })}
+              >
+                <span className={styles.modelLabel}>{opt.label}</span>
+                <span className={styles.providerBadge}>{opt.provider} · TTS</span>
+              </button>
+            ))}
+          </div>
+        </details>
         <div className={styles.pipelinePreview}>
           <span className={styles.pipelineNode}>
             {STT_OPTIONS.find((o) => o.id === state.cascaded.sttProvider)?.label}
