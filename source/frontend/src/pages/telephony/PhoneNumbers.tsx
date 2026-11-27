@@ -243,14 +243,14 @@ function PhoneNumbers() {
             ) : (
               mappings.map((m) => (
                 <tr key={m.phoneNumber} style={{ borderBottom: '1px solid #e2e8f0' }}>
-                  <td style={{ padding: '14px 16px', fontSize: '13px', fontWeight: 500, color: '#0f172a', fontFamily: 'monospace' }}>{m.phoneNumber}</td>
-                  <td style={{ padding: '14px 16px' }}>
+                  <td data-label="Phone Number" style={{ padding: '14px 16px', fontSize: '13px', fontWeight: 500, color: '#0f172a', fontFamily: 'monospace' }}>{m.phoneNumber}</td>
+                  <td data-label="Provider" style={{ padding: '14px 16px' }}>
                     <span style={{ fontSize: '11px', fontWeight: 600, padding: '3px 8px', borderRadius: '4px', background: '#e0e7ff', color: '#3730a3' }}>
                       {(m.provider || 'pstn').toUpperCase()}
                     </span>
                   </td>
-                  <td style={{ padding: '14px 16px', fontSize: '13px', color: '#475569' }}>{m.demoName || agentName(m.demoId)}</td>
-                  <td style={{ padding: '14px 16px', textAlign: 'right' }}>
+                  <td data-label="Agent" style={{ padding: '14px 16px', fontSize: '13px', color: '#475569' }}>{m.demoName || agentName(m.demoId)}</td>
+                  <td data-label="Actions" style={{ padding: '14px 16px', textAlign: 'right' }}>
                     <button
                       onClick={() => startEdit(m)}
                       style={{ padding: '4px 10px', marginRight: '8px', background: '#fff', color: '#4338ca', border: '1px solid #c7d2fe', borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}

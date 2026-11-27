@@ -4,11 +4,13 @@
   gap: 20px;
 }
 
-/* Two-column layout */
+/* Two-column layout — single column on phones, side-by-side from desktop */
 .twoColumnLayout {
   display: flex;
-  gap: 20px;
-  align-items: start;
+  flex-direction: column;
+  gap: 16px;
+  align-items: stretch;
+  max-width: 100%;
 }
 
 .leftPanel {
@@ -20,22 +22,24 @@
 }
 
 .rightPanel {
-  width: 380px;
+  width: 100%;
   flex-shrink: 0;
-  position: sticky;
-  top: 80px;
-  max-height: calc(100vh - 120px);
-  overflow-y: auto;
+  position: static;
+  max-height: none;
 }
 
-@media (max-width: 1100px) {
+@media (min-width: 1024px) {
   .twoColumnLayout {
-    flex-direction: column;
+    flex-direction: row;
+    gap: 20px;
+    align-items: start;
   }
   .rightPanel {
-    width: 100%;
-    position: static;
-    max-height: none;
+    width: 380px;
+    position: sticky;
+    top: 80px;
+    max-height: calc(100dvh - 120px);
+    overflow-y: auto;
   }
 }
 
@@ -872,9 +876,9 @@
 }
 
 .slidePanel {
-  width: 40vw;
-  max-width: 90vw;
-  min-width: 360px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   background: var(--surface);
   height: 100%;
   box-shadow: -4px 0 24px rgba(0, 0, 0, 0.1);
@@ -930,9 +934,17 @@
 /* Channel grid */
 .channelGrid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  grid-template-columns: 1fr;
+  gap: 12px;
   margin-bottom: 12px;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .channelGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
 }
 
 .channelCard {
@@ -980,4 +992,146 @@
   font-size: 14px;
   color: var(--text-muted);
   font-style: italic;
+}
+
+@media (min-width: 768px) {
+  .slidePanel {
+    width: 40vw;
+    max-width: 90vw;
+    min-width: 360px;
+  }
+}
+
+/* Chat FAB + popup (voice session) */
+.chatFab {
+  position: fixed;
+  right: max(16px, var(--safe-right, 0px));
+  bottom: max(16px, var(--safe-bottom, 0px));
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #6366f1;
+  border: none;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 120;
+}
+
+.chatPopup {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  background: #fafbfc;
+  border-radius: 0;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 160;
+  padding-top: var(--safe-top, 0px);
+}
+
+.chatHeader {
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+.chatControls {
+  padding: 12px 16px calc(12px + var(--safe-bottom, 0px));
+  border-top: 1px solid #f1f5f9;
+  background: #fafbfc;
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.chatStartBtn,
+.chatStopBtn {
+  min-height: 48px;
+  min-width: var(--tap);
+  padding: 12px 28px;
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chatStartBtn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.chatStartBtn:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.chatStopBtn {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.chatInput {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--tap);
+  padding: 10px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 16px;
+  outline: none;
+  background: #f8fafc;
+}
+
+.chatSendBtn {
+  min-width: var(--tap);
+  min-height: var(--tap);
+  padding: 10px 16px;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (min-width: 768px) {
+  .chatPopup {
+    inset: auto 24px 24px auto;
+    width: 400px;
+    height: min(600px, calc(100dvh - 48px));
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.05);
+    padding-top: 0;
+  }
+  .chatControls {
+    padding: 12px 16px;
+    border-radius: 0 0 16px 16px;
+  }
+}
+
+.startBtn,
+.stopBtn {
+  min-height: var(--tap);
+  padding: 10px 20px;
 }

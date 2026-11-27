@@ -325,11 +325,11 @@ function EvalSuiteCompare() {
                   <tbody>
                     {allMetrics.map((metric) => (
                       <tr key={metric}>
-                        <td className={styles.metricLabel}>{metric}</td>
+                        <td className={styles.metricLabel} data-label="Metric">{metric}</td>
                         {selectedJobs.map((job) => {
                           const verdict = job.summary?.metricVerdicts?.[metric];
                           return (
-                            <td key={job.id}>
+                            <td key={job.id} data-label={job.config.testName || 'Task'}>
                               {verdict ? (
                                 <span className={verdict === 'PASS' ? styles.pass : styles.fail}>
                                   {verdict}

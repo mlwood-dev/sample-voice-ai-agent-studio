@@ -219,21 +219,21 @@ function Demos() {
           <tbody>
             {paginatedDemos.map((demo) => (
               <tr key={demo.id}>
-                <td className={styles.demoName}>
+                <td data-label="Name" className={styles.demoName}>
                   <a onClick={() => navigate(`/agents/${demo.id}/summary`)} style={{ color: '#6366f1', cursor: 'pointer', textDecoration: 'none', fontWeight: 600 }}>
                     {demo.name}
                   </a>
                 </td>
-                <td className={styles.meta}>{formatDate(demo.createdAt)}</td>
-                <td className={styles.meta}>
+                <td className={styles.meta} data-label="Created">{formatDate(demo.createdAt)}</td>
+                <td className={styles.meta} data-label="Model">
                   {demo.config.model?.join(', ') || '—'}
                 </td>
                 {isAdmin && (
-                  <td className={styles.meta}>
+                  <td className={styles.meta} data-label="Owner">
                     {demo.userEmail || demo.userId || '—'}
                   </td>
                 )}
-                <td>
+                <td data-label="Actions">
                   <div className={styles.actions}>
                     <ActionMenu
                       actions={[
