@@ -182,3 +182,54 @@
 .preScroll { overflow-x: auto; max-width: 100%; background: #0f172a; color: #e2e8f0; border-radius: 12px; padding: 12px; font-size: 12px; line-height: 1.5; }
 .tabsScroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
 .bannerWarn { background: var(--flag, #fef3c7); color: #92400e; border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; font-size: 14px; }
+
+/* Call review */
+.mark { background: #fef3c7; color: inherit; border-radius: 2px; padding: 0 1px; }
+.toolRow { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; margin-top: 8px; }
+.toolChip { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border); background: #fff; font-size: 13px; font-weight: 600; color: var(--brand-ink); }
+.toolChipOpen { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+.toolDetail { margin: 6px 0 0; max-width: 100%; overflow-x: auto; background: #0f172a; color: #e2e8f0; border-radius: 12px; padding: 12px; font-size: 12px; line-height: 1.5; }
+.showMore { background: none; border: none; color: var(--accent); font-size: 14px; font-weight: 600; padding: 8px 0; min-height: 44px; }
+.bubbleText { font-size: 16px; line-height: 24px; }
+
+.summaryCard { background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
+.summaryHead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.metaList { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; margin-top: 16px; }
+.metaList dt { font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); }
+.metaList dd { font-size: 15px; font-weight: 600; margin: 2px 0 0; color: var(--text-primary); }
+
+.reviewHeader { margin: 4px 0 16px; }
+.reviewActions { display: flex; align-items: center; gap: 2px; }
+.searchRow { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; }
+.reviewLog { display: flex; flex-direction: column; gap: 10px; padding: 4px 0 16px; }
+.reviewBubble { max-width: 85%; border-radius: 16px; padding: 10px 14px; }
+.reviewAgent { align-self: flex-start; background: #fff; border: 1px solid var(--border); }
+.reviewYou { align-self: flex-end; background: var(--accent-light); }
+.reviewActive { outline: 2px solid var(--accent); outline-offset: 2px; }
+.bubbleTime { margin-left: 8px; font-weight: 600; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+.techDetails { margin: 8px 0 24px; border: 1px solid var(--border); border-radius: 16px; padding: 12px 16px; background: #fff; }
+.techDetails summary { cursor: pointer; font-weight: 600; min-height: 44px; display: flex; align-items: center; }
+.techList { list-style: none; padding: 0; margin: 12px 0 0; display: flex; flex-direction: column; gap: 12px; }
+.techLine { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; }
+
+.audioDock { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 10px 12px; margin-bottom: 8px; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06); }
+.playBtn { width: 48px; height: 48px; flex-shrink: 0; border: none; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; }
+.playBtn:disabled { background: #c7d2fe; }
+.scrubber { flex: 1; min-width: 0; accent-color: var(--accent); height: 32px; }
+.audioTime { font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--text-muted); white-space: nowrap; }
+.audioHint { font-size: 13px; color: var(--text-muted); margin: 0 0 16px; }
+
+.reviewLayout { display: block; }
+.summaryMobile { display: block; }
+.reviewSide { display: none; }
+.reviewMainTech { display: block; }
+@media (min-width: 1280px) {
+  .reviewLayout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 24px; align-items: start; }
+  .summaryMobile { display: none; }
+  .reviewSide { display: block; position: sticky; top: 16px; }
+  .reviewMainTech { display: none; }
+}
+
+.btnRow3 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.btnRow3 .btnWide { grid-column: 1 / -1; }

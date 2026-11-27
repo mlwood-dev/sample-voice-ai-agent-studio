@@ -116,7 +116,7 @@ function CallsPage() {
                 ? `Phone call · ${s.callerId || ''} · ${time}`.replace(/\s+·\s+$/, '')
                 : `Web call · ${time}`;
               return (
-                <Link key={s.sessionId} to={`/calls/${s.sessionId}`} className={styles.callCard}>
+                <Link key={s.sessionId} to={`/calls/${s.sessionId}?agent=${encodeURIComponent(selectedAgentId || '')}`} className={styles.callCard}>
                   <div className={styles.callCardBody}>
                     <div style={{ fontWeight: 700 }}>{title}</div>
                     <div className={styles.muted} style={{ fontSize: 13, marginTop: 2 }}>

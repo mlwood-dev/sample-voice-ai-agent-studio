@@ -33,6 +33,12 @@ function AgentsHome() {
     navigate('/calls');
   };
 
+  const editAgent = (demo: Demo) => {
+    applyDemoToWizard(demo, dispatch);
+    setSelectedAgentId(demo.id);
+    navigate('/summary');
+  };
+
   const name = firstNameFromUser(user);
 
   return (
@@ -70,15 +76,16 @@ function AgentsHome() {
               <div className={styles.agentTop}>
                 <span className={styles.avatar}>{initials(demo.name)}</span>
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: 16 }}>{demo.name}</div>
+                  <button type="button" onClick={() => navigate(`/agents/${demo.id}`)} style={{ fontWeight: 700, fontSize: 16, background: 'none', border: 'none', padding: 0, color: 'inherit', textAlign: 'left', cursor: 'pointer' }}>{demo.name}</button>
                   <div className={styles.muted} style={{ fontSize: 13 }}>Edited {relativeTime(demo.updatedAt || demo.createdAt)}</div>
                 </div>
               </div>
               {desc && <p style={{ fontSize: 15, lineHeight: 1.5, color: 'var(--text-secondary)', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{desc}</p>}
               <p className={styles.muted} style={{ fontSize: 13 }}>Voice: {voice} ({lang}) · {pipeline} · {tools} {tools === 1 ? 'tool' : 'tools'}</p>
-              <div className={styles.agentActions}>
+              <div className={`${styles.agentActions} ${styles.btnRow3}`}>
                 <button type="button" className={`${styles.btn} ${styles.btnPrimary}`} onClick={() => talk(demo)}>Talk to it</button>
                 <button type="button" className={`${styles.btn} ${styles.btnSecondary}`} onClick={() => reviewCalls(demo)}>Review calls</button>
+                <button type="button" className={`${styles.btn} ${styles.btnSecondary} ${styles.btnWide}`} onClick={() => editAgent(demo)}>Edit</button>
               </div>
             </article>
           );
