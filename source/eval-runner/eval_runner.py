@@ -199,7 +199,7 @@ def map_agent_to_test_config(agent_config, eval_config):
         sonic_system_prompt=system_prompt,
         sonic_voice_id=voice_id,
         sonic_tool_config=None,  # Tools handled by AgentCore — judge evaluates from conversation log
-        user_model_id=eval_config.get("userModelId", "claude-haiku"),
+        user_model_id=eval_config.get("userModelId", "nova-pro"),
         user_system_prompt=eval_config.get("userSystemPrompt", ""),
         max_turns=eval_config.get("maxTurns", 5),
         input_mode=eval_config.get("inputMode", "text"),
@@ -210,6 +210,7 @@ def map_agent_to_test_config(agent_config, eval_config):
         },
         output_directory="/tmp/results",
         hangup_prompt_enabled=eval_config.get("allowHangup", True),
+        judge_model_id=eval_config.get("judgeModelId", "nova-pro"),
     )
 
     return config
@@ -690,7 +691,7 @@ def run_eval(event):
 
     except Exception as e:
         error_msg = f"Eval execution error: {str(e)}\n{traceback.format_exc()}"
-        update_job_status(job_id, "FAILED", error=error_msg[:1000])
+        update_job_status(job_id, "FAILED", error=error_msg[:8000])
         if batch_id:
             update_batch_counter(batch_id, "failed")
         return

@@ -664,7 +664,7 @@ class LiveInteractionSession:
             rubrics=rubrics,
         )
 
-        judge = BinaryLLMJudge(judge_model="claude-opus", log_prompts=self.config.log_judge_prompts)
+        judge = BinaryLLMJudge(judge_model=getattr(self.config, "judge_model_id", None) or "nova-pro", log_prompts=self.config.log_judge_prompts)
 
         result = judge.evaluate_conversation(
             conversation_log=conversation_log,
@@ -840,7 +840,7 @@ async def main():
     audio_parser.add_argument('--s3-bucket', type=str, required=True,
                               help='S3 bucket for temp audio uploads')
     audio_parser.add_argument('--region', type=str, default='us-east-1', help='AWS region')
-    audio_parser.add_argument('--judge-model', type=str, default='claude-opus',
+    audio_parser.add_argument('--judge-model', type=str, default='nova-pro',
                               help='Judge model alias')
 
     # -----------------------------------------------------------------------

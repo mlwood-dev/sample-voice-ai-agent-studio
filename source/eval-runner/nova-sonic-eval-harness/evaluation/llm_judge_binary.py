@@ -9,7 +9,7 @@ from typing import Dict, Any, List, Optional
 from pathlib import Path
 from datetime import datetime
 
-from utils.model_registry import get_model_registry
+from utils.model_registry import get_model_registry, is_anthropic_access_error, nova_pro_resolution
 from evaluation.evaluation_types import (
     BinaryEvaluationCriteria,
     BinaryEvaluationResult,
@@ -124,7 +124,7 @@ class BinaryLLMJudge:
 
     def __init__(
         self,
-        judge_model: str = "claude-opus",
+        judge_model: str = "nova-pro",
         region: str = None,
         log_prompts: bool = False,
         custom_metrics: Optional[Dict[str, BinaryMetricDefinition]] = None,
@@ -381,14 +381,34 @@ Rules:
             }
         ]
 
-        response = self.client.converse(
-            modelId=self.judge_model,
-            messages=messages,
-            inferenceConfig={
-                "maxTokens": 4096,
-                "temperature": 0.1,
-            },
-        )
+        try:
+            response = self.client.converse(
+                modelId=self.judge_model,
+                messages=messages,
+                inferenceConfig={
+                    "maxTokens": 4096,
+                    "temperature": 0.1,
+                },
+            )
+        except Exception as e:
+            if is_anthropic_access_error(e) and self.judge_model != nova_pro_resolution()["model_id"]:
+                fallback = nova_pro_resolution()
+                print(
+                    f"⚠️  Anthropic judge {self.judge_model} is unavailable ({e}). "
+                    f"Falling back to {fallback['model_id']}."
+                )
+                self.judge_model = fallback["model_id"]
+                self.client = boto3.client("bedrock-runtime", region_name=fallback["region"])
+                response = self.client.converse(
+                    modelId=self.judge_model,
+                    messages=messages,
+                    inferenceConfig={
+                        "maxTokens": 4096,
+                        "temperature": 0.1,
+                    },
+                )
+            else:
+                raise
 
         response_text = ""
         if "output" in response and "message" in response["output"]:

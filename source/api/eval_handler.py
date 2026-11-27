@@ -103,7 +103,7 @@ def validate_eval_config(config):
     if input_mode not in ALLOWED_INPUT_MODES:
         errors.append(f"inputMode must be one of: {ALLOWED_INPUT_MODES}")
 
-    user_model_id = config.get("userModelId", "claude-haiku")
+    user_model_id = config.get("userModelId", "nova-pro")
     evaluation_aspects = config.get("evaluationAspects", [])
     if not evaluation_aspects:
         errors.append("evaluationAspects must contain at least one aspect")
@@ -122,7 +122,7 @@ def validate_eval_config(config):
         "scenarioDescription": config.get("scenarioDescription", ""),
         "useMock": config.get("useMock", False),
         "allowHangup": config.get("allowHangup", True),
-        "judgeModelId": config.get("judgeModelId", "claude-sonnet"),
+        "judgeModelId": config.get("judgeModelId", "nova-pro"),
     }, None
 
 
