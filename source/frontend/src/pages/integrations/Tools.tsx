@@ -237,7 +237,7 @@ function Tools() {
           className={`${styles.tab} ${activeTab === 'webhook' ? styles.tabActive : ''}`}
           onClick={() => setActiveTab('webhook')}
         >
-          Webhook (API)
+          Webhook
         </button>
         <button
           className={`${styles.tab} ${activeTab === 'lambda' ? styles.tabActive : ''}`}
@@ -249,7 +249,7 @@ function Tools() {
           className={`${styles.tab} ${activeTab === 'mcp' ? styles.tabActive : ''}`}
           onClick={() => setActiveTab('mcp')}
         >
-          MCP (AgentCore Gateway)
+          MCP
         </button>
       </div>
 

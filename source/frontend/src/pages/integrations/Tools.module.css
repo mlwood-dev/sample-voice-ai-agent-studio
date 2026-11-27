@@ -45,6 +45,13 @@
   gap: 0;
   border-bottom: 1px solid var(--border);
   margin-bottom: 24px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  flex-wrap: nowrap;
+}
+.tab {
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .tab {
