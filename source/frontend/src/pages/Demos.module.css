@@ -114,7 +114,8 @@
 }
 
 .actionBtn {
-  padding: 5px 12px;
+  padding: 10px 12px;
+  min-height: var(--tap);
   border: 1px solid var(--border);
   background: white;
   border-radius: 4px;
@@ -166,18 +167,36 @@
   inset: 0;
   background: rgba(0, 0, 0, 0.4);
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: stretch;
+  justify-content: stretch;
   z-index: 1000;
+  padding: 0;
 }
 
 .modalContent {
   background: var(--surface);
-  border-radius: var(--radius-lg);
-  padding: 32px;
-  max-width: 400px;
-  width: 90%;
-  box-shadow: var(--shadow-md);
+  border-radius: 0;
+  padding: calc(24px + var(--safe-top, 0px)) 20px calc(24px + var(--safe-bottom, 0px));
+  max-width: none;
+  width: 100%;
+  min-height: 100dvh;
+  box-shadow: none;
+}
+
+@media (min-width: 768px) {
+  .modal {
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .modalContent {
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    max-width: 400px;
+    width: 90%;
+    min-height: 0;
+    box-shadow: var(--shadow-md);
+  }
 }
 
 .modalTitle {
@@ -245,4 +264,14 @@
 .iconBtn:hover {
   background: #f1f5f9;
   color: #6366f1;
+}
+
+.actions {
+  flex-wrap: wrap;
+}
+.cancelBtn,
+.confirmDeleteBtn,
+.launchBtn,
+.deleteBtn {
+  min-height: var(--tap);
 }
