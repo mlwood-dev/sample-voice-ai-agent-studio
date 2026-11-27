@@ -1,9 +1,19 @@
 # Model ID mapping
 # Maps short alias -> actual Bedrock model ID
 # Used by bedrock_model_client.py (user simulator) and sonic_stream_manager.py
+#
+# Defaults for the Studio eval runner are Amazon Nova (nova-pro / nova-lite).
+# Claude aliases remain available when the account has completed Anthropic's
+# use-case form; the runner falls back to Nova Pro if that access is missing.
 
 # User simulator models (via Bedrock Converse API)
 user_models:
+  nova-pro:
+    model_id: "us.amazon.nova-pro-v1:0"
+    region: "us-east-1"
+  nova-lite:
+    model_id: "us.amazon.nova-lite-v1:0"
+    region: "us-east-1"
   claude-haiku:
     model_id: "us.anthropic.claude-haiku-4-5-20251001-v1:0"
     region: "us-west-2"
@@ -25,9 +35,18 @@ sonic_models:
 
 # Judge models (via Bedrock Converse API)
 judge_models:
+  nova-pro:
+    model_id: "us.amazon.nova-pro-v1:0"
+    region: "us-east-1"
+  nova-lite:
+    model_id: "us.amazon.nova-lite-v1:0"
+    region: "us-east-1"
   claude-opus:
     model_id: "global.anthropic.claude-opus-4-5-20251101-v1:0"
     region: "us-east-1"
   claude-sonnet:
     model_id: "us.anthropic.claude-sonnet-4-6"
     region: "us-east-1"
+  claude-haiku:
+    model_id: "us.anthropic.claude-haiku-4-5-20251001-v1:0"
+    region: "us-west-2"

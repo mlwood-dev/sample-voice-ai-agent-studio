@@ -43,7 +43,7 @@ class TestConfig:
     sonic_tool_config: Optional[ToolConfig] = None
 
     # User simulator configuration
-    user_model_id: str = "claude-haiku"
+    user_model_id: str = "nova-pro"
     user_system_prompt: Optional[str] = None
     user_max_tokens: int = 1024
     user_temperature: float = 1.0
@@ -65,6 +65,7 @@ class TestConfig:
     auto_evaluate: bool = False
     evaluation_criteria: Optional[Dict[str, Any]] = None
     log_judge_prompts: bool = False
+    judge_model_id: str = "nova-pro"
 
     # Tool registry configuration
     tool_registry_module: Optional[str] = None  # e.g., "examples.example_with_tool_registry"

@@ -94,3 +94,31 @@ def get_model_registry(config_path: str = "configs/models.yaml") -> ModelRegistr
     if _default_registry is None:
         _default_registry = ModelRegistry(config_path)
     return _default_registry
+
+
+NOVA_PRO_ALIAS = "nova-pro"
+NOVA_PRO_MODEL_ID = "us.amazon.nova-pro-v1:0"
+NOVA_PRO_REGION = "us-east-1"
+
+
+def is_anthropic_access_error(exc: BaseException) -> bool:
+    """True when Bedrock rejects an Anthropic model because the use-case form is missing."""
+    parts = [str(exc), type(exc).__name__]
+    cause = getattr(exc, "__cause__", None)
+    if cause is not None:
+        parts.append(str(cause))
+    response = getattr(exc, "response", None)
+    if isinstance(response, dict):
+        err = response.get("Error") or {}
+        parts.append(str(err.get("Code", "")))
+        parts.append(str(err.get("Message", "")))
+    text = " ".join(parts).lower()
+    return (
+        "model use case details have not been submitted" in text
+        or "anthropic use case details form" in text
+    )
+
+
+def nova_pro_resolution() -> Dict[str, str]:
+    """Canonical Nova Pro target used when Anthropic models are unavailable."""
+    return {"model_id": NOVA_PRO_MODEL_ID, "region": NOVA_PRO_REGION, "alias": NOVA_PRO_ALIAS}

@@ -6,7 +6,7 @@ Supports multiple Bedrock models as user simulators.
 import boto3
 from typing import Optional, List, Dict, Any
 
-from utils.model_registry import get_model_registry
+from utils.model_registry import get_model_registry, is_anthropic_access_error, nova_pro_resolution
 
 
 class BedrockModelClient:
@@ -17,7 +17,7 @@ class BedrockModelClient:
 
     def __init__(
         self,
-        model: str = "claude-haiku",
+        model: str = "nova-pro",
         region: str = None,
         aws_access_key: Optional[str] = None,
         aws_secret_key: Optional[str] = None,
@@ -29,7 +29,7 @@ class BedrockModelClient:
         Initialize Bedrock model client.
 
         Args:
-            model: Model alias ("claude-haiku", "gpt-oss", "qwen") or full Bedrock model ID
+            model: Model alias ("nova-pro", "nova-lite", "claude-haiku", ...) or full Bedrock model ID
             region: AWS region (overrides models.yaml if provided)
             aws_access_key: AWS access key (or use env var)
             aws_secret_key: AWS secret key (or use env var)
@@ -56,6 +56,28 @@ class BedrockModelClient:
 
         # Conversation history
         self.conversation_history: List[Dict[str, Any]] = []
+
+    def _converse(self, messages):
+        return self.client.converse(
+            modelId=self.model_id,
+            messages=messages,
+            system=[{"text": self.system_prompt}],
+            inferenceConfig={
+                "maxTokens": self.max_tokens,
+                "temperature": self.temperature
+            }
+        )
+
+    def _switch_to_nova_pro(self, exc):
+        fallback = nova_pro_resolution()
+        print(
+            f"⚠️  Anthropic model {self.model_id} is unavailable ({exc}). "
+            f"Falling back to {fallback['model_id']}."
+        )
+        self.model_id = fallback["model_id"]
+        self.model_short_name = fallback["alias"]
+        self.client = boto3.client("bedrock-runtime", region_name=fallback["region"])
+
 
     def _get_default_system_prompt(self) -> str:
         """Get default system prompt for conversational user."""
@@ -117,18 +139,14 @@ Remember: You ARE the user. Speak directly without framing or meta-commentary.""
 
         # Call Bedrock with converse API (synchronous)
         try:
-            response = self.client.converse(
-                modelId=self.model_id,
-                messages=messages,
-                system=[{"text": self.system_prompt}],
-                inferenceConfig={
-                    "maxTokens": self.max_tokens,
-                    "temperature": self.temperature
-                }
-            )
+            response = self._converse(messages)
         except Exception as e:
-            print(f"❌ Error calling Bedrock: {e}")
-            raise
+            if is_anthropic_access_error(e) and self.model_id != nova_pro_resolution()["model_id"]:
+                self._switch_to_nova_pro(e)
+                response = self._converse(messages)
+            else:
+                print(f"❌ Error calling Bedrock: {e}")
+                raise
 
         # Extract text response
         user_message = ""
