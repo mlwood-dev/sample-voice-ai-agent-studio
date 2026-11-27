@@ -76,7 +76,7 @@ async def evaluate_log(
     else:
         eval_path = log_dir / 'llm_judge_evaluation.json'
 
-    judge = BinaryLLMJudge(judge_model="claude-opus")
+    judge = BinaryLLMJudge(judge_model="nova-pro")
 
     criteria = BinaryEvaluationCriteria(
         user_goal=user_goal,

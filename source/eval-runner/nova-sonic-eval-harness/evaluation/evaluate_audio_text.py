@@ -34,7 +34,7 @@ class AudioTextConsistencyJudge:
 
     VALID_VERDICTS = {"CONSISTENT", "MINOR_DIFFERENCES", "HALLUCINATION"}
 
-    def __init__(self, judge_model: str = "claude-opus", region: str = None):
+    def __init__(self, judge_model: str = "nova-pro", region: str = None):
         registry = get_model_registry()
         resolved = registry.resolve_judge_model(judge_model)
         self.judge_model = resolved["model_id"]
@@ -373,13 +373,13 @@ def main():
         print("  --s3-bucket <name>  S3 bucket for temp audio uploads")
         print("\nOptional arguments:")
         print("  --region <region>   AWS region (default: us-east-1)")
-        print("  --judge-model <model>  Judge model alias (default: claude-opus)")
+        print("  --judge-model <model>  Judge model alias (default: nova-pro)")
         sys.exit(1)
 
     log_dir = None
     s3_bucket = None
     region = "us-east-1"
-    judge_model = "claude-opus"
+    judge_model = "nova-pro"
 
     i = 1
     while i < len(sys.argv):

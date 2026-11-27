@@ -52,7 +52,7 @@ function EvalsPage() {
         testName: 'Quick eval',
         scenarioDescription: scenario,
         maxTurns: 10,
-        userModelId: 'claude-haiku',
+        userModelId: 'nova-pro',
         inputMode: 'text',
         evaluationAspects: DEFAULT_ASPECTS,
         useMock: true,

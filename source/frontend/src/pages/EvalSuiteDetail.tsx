@@ -45,7 +45,7 @@ function EvalSuiteDetail() {
   const [tcSonicModelId, setTcSonicModelId] = useState('');
   const [tcPromptOverride, setTcPromptOverride] = useState('');
   const [tcUserPrompt, setTcUserPrompt] = useState('');
-  const [tcUserModelId, setTcUserModelId] = useState('claude-haiku');
+  const [tcUserModelId, setTcUserModelId] = useState('nova-pro');
   const [tcMaxTurns, setTcMaxTurns] = useState(15);
   const [tcInputMode, setTcInputMode] = useState<'text' | 'polly'>('text');
   const [tcUseMock, setTcUseMock] = useState(true);
@@ -203,7 +203,7 @@ function EvalSuiteDetail() {
     setTcSonicModelId('');
     setTcPromptOverride('');
     setTcUserPrompt('');
-    setTcUserModelId('claude-haiku');
+    setTcUserModelId('nova-pro');
     setTcMaxTurns(15);
     setTcInputMode('text');
     setTcUseMock(true);
@@ -441,7 +441,7 @@ function EvalSuiteDetail() {
                         const snapshot = job.agentSnapshot as any;
                         setTcSonicModelId(snapshot?.modelId || '');
                         setTcUserPrompt(jc.userSystemPrompt || '');
-                        setTcUserModelId(jc.userModelId || 'claude-haiku');
+                        setTcUserModelId(jc.userModelId || 'nova-pro');
                         setTcMaxTurns(jc.maxTurns || 15);
                         setTcInputMode(jc.inputMode || 'text');
                         setTcUseMock(jc.useMock ?? true);
@@ -645,8 +645,10 @@ function EvalSuiteDetail() {
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#64748b', marginBottom: '3px' }}>User Simulator LLM</label>
                   <select value={tcUserModelId} onChange={(e) => setTcUserModelId(e.target.value)} style={{ width: '100%', padding: '7px 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', background: 'white' }}>
-                    <option value="claude-haiku">Claude Haiku (fast)</option>
-                    <option value="claude-sonnet">Claude Sonnet (smarter)</option>
+                    <option value="nova-pro">Nova Pro (recommended)</option>
+                    <option value="nova-lite">Nova Lite (faster, cheaper)</option>
+                    <option value="claude-haiku">Claude Haiku (requires Anthropic access)</option>
+                    <option value="claude-sonnet">Claude Sonnet (requires Anthropic access)</option>
                   </select>
                 </div>
                 <div>
