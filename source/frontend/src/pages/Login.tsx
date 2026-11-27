@@ -161,7 +161,7 @@ function Login() {
       </div>
 
       <p style={{ textAlign: 'center', fontSize: '14px', color: '#64748b', marginTop: '16px' }}>
-        Need access? Contact <a href="mailto:michael@gdna.io" style={{ color: '#16332E', fontWeight: 600 }}>michael@gdna.io</a>
+        Need access? Contact <a href="mailto:mike@everwood.tech" style={{ color: '#16332E', fontWeight: 600 }}>mike@everwood.tech</a>
       </p>
 
       <p className={styles.footer}>Based on an AWS Sample · Amazon Bedrock</p>

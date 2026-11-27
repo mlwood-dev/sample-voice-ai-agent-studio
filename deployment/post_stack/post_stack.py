@@ -29,7 +29,7 @@ class PostStack(Stack):
         admin_emails = (
             self.node.try_get_context("admin_emails")
             or os.environ.get("CDK_INPUT_ADMIN_EMAILS")
-            or "michael@gdna.io"
+            or "mike@everwood.tech"
         )
 
         # Lambda to create Cognito users and assign groups
