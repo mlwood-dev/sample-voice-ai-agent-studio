@@ -53,19 +53,57 @@ const DEFAULT_ASPECTS = [
 ];
 
 const USER_SIM_MODELS = [
-  { id: 'claude-haiku', label: 'Claude Haiku (fast, cheap)' },
-  { id: 'claude-sonnet', label: 'Claude Sonnet (balanced)' },
-  { id: 'claude-opus', label: 'Claude Opus (best quality)' },
-  { id: 'nova-lite', label: 'Nova Lite' },
-  { id: 'nova-pro', label: 'Nova Pro' },
+  { id: 'nova-pro', label: 'Nova Pro (recommended)' },
+  { id: 'nova-lite', label: 'Nova Lite (faster, cheaper)' },
+  { id: 'claude-haiku', label: 'Claude Haiku (requires Anthropic access)' },
+  { id: 'claude-sonnet', label: 'Claude Sonnet (requires Anthropic access)' },
+  { id: 'claude-opus', label: 'Claude Opus (requires Anthropic access)' },
 ];
 
 const JUDGE_MODELS = [
-  { id: 'claude-sonnet', label: 'Claude Sonnet (recommended)' },
-  { id: 'claude-opus', label: 'Claude Opus (most accurate)' },
-  { id: 'claude-haiku', label: 'Claude Haiku (fast, less accurate)' },
-  { id: 'nova-pro', label: 'Nova Pro' },
+  { id: 'nova-pro', label: 'Nova Pro (recommended)' },
+  { id: 'nova-lite', label: 'Nova Lite (faster, cheaper)' },
+  { id: 'claude-sonnet', label: 'Claude Sonnet (requires Anthropic access)' },
+  { id: 'claude-opus', label: 'Claude Opus (requires Anthropic access)' },
+  { id: 'claude-haiku', label: 'Claude Haiku (requires Anthropic access)' },
 ];
+
+
+function describeEvalError(raw?: string): { message: string; details: string } {
+  const details = (raw || '').trim();
+  if (!details) return { message: 'The evaluation failed.', details: '' };
+  const lower = details.toLowerCase();
+  let message = 'The evaluation failed.';
+  if (lower.includes('model use case details') || lower.includes('anthropic use case')) {
+    message = "This AWS account hasn't completed Anthropic's use case form, so Claude models can't be used. Evaluations now fall back to Amazon Nova Pro.";
+  } else if (lower.includes('resourcenotfoundexception')) {
+    message = 'The selected model is not available in this AWS account.';
+  } else if (lower.includes('throttl')) {
+    message = 'The model was throttled. Try running the evaluation again in a moment.';
+  } else if (lower.includes('accessdenied') || lower.includes('not authorized')) {
+    message = 'This account is not allowed to call the selected model.';
+  } else {
+    const first = details.split('\n').map((s) => s.trim()).find(Boolean) || message;
+    message = first.length > 180 ? `${first.slice(0, 177)}…` : first;
+  }
+  return { message, details };
+}
+
+function EvalErrorMessage({ error }: { error?: string }) {
+  const { message, details } = describeEvalError(error);
+  return (
+    <div>
+      <p style={{ fontSize: '14px', lineHeight: '22px', color: '#7f1d1d' }}>{message}</p>
+      {details && details !== message && (
+        <details style={{ marginTop: '12px' }}>
+          <summary style={{ cursor: 'pointer', fontWeight: 600, fontSize: '14px', minHeight: '44px', display: 'flex', alignItems: 'center' }}>Technical details</summary>
+          <pre style={{ margin: '8px 0 0', maxWidth: '100%', overflowX: 'auto', background: '#0f172a', color: '#e2e8f0', borderRadius: '12px', padding: '12px', fontSize: '12px', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{details}</pre>
+        </details>
+      )}
+    </div>
+  );
+}
+
 
 function EvaluationTab({ agentId, agentName, systemPrompt, initialJobId }: EvaluationTabProps) {
   const navigate = useNavigate();
@@ -109,8 +147,8 @@ function EvaluationTab({ agentId, agentName, systemPrompt, initialJobId }: Evalu
   const [metricPopupDesc, setMetricPopupDesc] = useState('');
   const [metricPopupEditing, setMetricPopupEditing] = useState<string | null>(null);
   const [rubrics, setRubrics] = useState<Record<string, string[]>>({});
-  const [userModelId, setUserModelId] = useState('claude-haiku');
-  const [judgeModelId, setJudgeModelId] = useState('claude-sonnet');
+  const [userModelId, setUserModelId] = useState('nova-pro');
+  const [judgeModelId, setJudgeModelId] = useState('nova-pro');
   const [userPrompt, setUserPrompt] = useState('You are a customer calling to test the agent. Be natural and conversational.');
   const [selectedAspects, setSelectedAspects] = useState<string[]>(['Goal Achievement', 'Response Quality', 'Conversation Flow']);
 
@@ -447,7 +485,7 @@ function EvaluationTab({ agentId, agentName, systemPrompt, initialJobId }: Evalu
         {selectedJob.status === 'FAILED' && (
           <div style={{ background: 'white', border: '1px solid #fecaca', borderRadius: '10px', padding: '20px' }}>
             <div style={{ fontSize: '14px', fontWeight: 600, color: '#dc2626', marginBottom: '8px' }}>Evaluation Failed</div>
-            <p style={{ fontSize: '13px', color: '#7f1d1d', whiteSpace: 'pre-wrap' }}>{selectedJob.error || 'Unknown error'}</p>
+            <EvalErrorMessage error={selectedJob.error} />
           </div>
         )}
 
@@ -600,7 +638,7 @@ function EvaluationTab({ agentId, agentName, systemPrompt, initialJobId }: Evalu
                   ['Input Mode', selectedJob.config.inputMode],
                   ['Tool Mode', selectedJob.config.useMock ? '🟡 Mock' : '🟢 Live'],
                   ['User Model', selectedJob.config.userModelId],
-                  ['Judge Model', (selectedJob.config as any).judgeModelId || 'claude-sonnet'],
+                  ['Judge Model', (selectedJob.config as any).judgeModelId || 'nova-pro'],
                   ['Aspects', selectedJob.config.evaluationAspects?.join(', ') || '—'],
                 ].map(([label, value]) => (
                   <div key={label} style={{ display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
