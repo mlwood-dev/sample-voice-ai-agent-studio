@@ -49,10 +49,11 @@ class PreStack(Stack):
                 require_symbols=True,  # AwsSolutions-COG1: full complexity
             ),
             user_invitation=cognito.UserInvitationConfig(
-                email_subject="Voice AI POC-in-a-Box — Your Login Credentials",
+                email_subject="Everwood Technologies x AWS-Sample — Your Login Credentials",
                 email_body=(
-                    "<h2>Voice AI POC-in-a-Box</h2>"
-                    "<p>You've been invited to the Voice AI POC-in-a-Box demo tool.</p>"
+                    "<h2>Everwood Technologies x AWS-Sample</h2>"
+                    "<p>You've been invited to the Everwood Technologies voice agent studio "
+                    "(based on an official AWS Sample).</p>"
                     "<p>This is a voice agent configuration and testing platform powered by "
                     "Amazon Bedrock AgentCore and Nova 2 Sonic.</p>"
                     "<h3>Your temporary credentials:</h3>"

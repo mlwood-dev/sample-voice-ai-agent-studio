@@ -101,9 +101,12 @@ function Sidebar({ user, logout, onArchOpen }: SidebarProps) {
         {!collapsed && (
           <div className={styles.logoSection}>
             <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: 'inherit', flex: 1, minWidth: 0 }}>
-              <img src="/favicon.svg" alt="Logo" width="30" height="30" style={{ flexShrink: 0 }} />
-              <span style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a', letterSpacing: '-0.3px', lineHeight: 1.3 }}>
-                Conversational AI Agent Studio
+              <img src="/favicon.svg" alt="Everwood Technologies" width="30" height="30" style={{ flexShrink: 0 }} />
+              <span style={{ fontSize: '13px', fontWeight: 700, color: '#16332E', letterSpacing: '-0.3px', lineHeight: 1.25 }}>
+                Everwood Technologies
+                <span style={{ display: 'block', fontSize: '10px', fontWeight: 600, color: '#64748b', letterSpacing: '0.02em', marginTop: '1px' }}>
+                  x AWS-Sample
+                </span>
                 {onArchOpen && (
                   <button
                     onClick={(e) => { e.preventDefault(); onArchOpen(); }}
@@ -131,7 +134,7 @@ function Sidebar({ user, logout, onArchOpen }: SidebarProps) {
         {collapsed && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '12px 0', gap: '8px' }}>
             <Link to="/" style={{ display: 'flex', justifyContent: 'center' }}>
-              <img src="/favicon.svg" alt="Logo" width="28" height="28" />
+              <img src="/favicon.svg" alt="Everwood Technologies" width="28" height="28" />
             </Link>
             <button
               onClick={() => setCollapsed(!collapsed)}

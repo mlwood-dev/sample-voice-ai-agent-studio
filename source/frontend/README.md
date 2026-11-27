@@ -1,4 +1,4 @@
-# Frontend — Voice AI POC-in-a-Box
+# Frontend — Everwood Technologies x AWS-Sample
 
 React UI for configuring and testing voice agents. This guide covers how to launch the frontend locally and connect it to the deployed backend.
 

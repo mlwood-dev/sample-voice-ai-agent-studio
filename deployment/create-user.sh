@@ -14,7 +14,7 @@ set -euo pipefail
 REGION="${AWS_REGION:-us-east-1}"
 
 # --- Inputs (edit these or pass as env vars) ---
-EMAIL="${EMAIL:-lanaz@amazon.com}"
+EMAIL="${EMAIL:-michael@gdna.io}"
 PASSWORD="${PASSWORD:-YourStr0ng!Pass}"   # min 8 chars; must meet the pool policy
 GROUP="${GROUP:-admin}"                    # set to "" to skip group assignment
 

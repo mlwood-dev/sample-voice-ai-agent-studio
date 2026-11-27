@@ -26,7 +26,11 @@ class PostStack(Stack):
         super().__init__(scope, construct_id, **kwargs)
 
         user_emails = os.environ.get("CDK_INPUT_USER_EMAILS", "")
-        admin_emails = os.environ.get("CDK_INPUT_ADMIN_EMAILS", "lanaz@amazon.com")
+        admin_emails = (
+            self.node.try_get_context("admin_emails")
+            or os.environ.get("CDK_INPUT_ADMIN_EMAILS")
+            or "michael@gdna.io"
+        )
 
         # Lambda to create Cognito users and assign groups
         create_users_fn = lambda_.Function(

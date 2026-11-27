@@ -1,7 +1,7 @@
 {
   "name": "voice-agent-poc-in-a-box",
   "version": "1.0.0",
-  "description": "",
+  "description": "Everwood Technologies x AWS-Sample \u2014 voice agent studio frontend, based on an official AWS Sample.",
   "main": "index.js",
   "scripts": {
     "dev": "vite",

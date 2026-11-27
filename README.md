@@ -1,6 +1,6 @@
-# Conversational AI Agent Studio
+# Everwood Technologies x AWS-Sample
 
-Design, build, and prototype voice AI agents on AWS. A guided studio for configuring real-time speech agents — from industry template to live phone call — powered by Amazon Nova Sonic, Strands Agents BidiAgent, and Amazon Bedrock AgentCore.
+Design, build, and prototype voice AI agents on AWS. This Everwood Technologies fork is based on the official AWS Sample *Conversational AI Agent Studio*. A guided studio for configuring real-time speech agents — from industry template to live phone call — powered by Amazon Nova Sonic, Strands Agents BidiAgent, and Amazon Bedrock AgentCore.
 
 > **Sample / proof-of-concept.** This project is a reference implementation for learning and prototyping. Review and harden it (security, error handling, scaling, cost controls) before using it for production workloads.
 

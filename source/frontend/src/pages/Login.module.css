@@ -28,8 +28,17 @@
 .logo h1 {
   font-size: 18px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: #16332E;
   letter-spacing: -0.3px;
+  margin: 0;
+}
+
+.wordmarkSub {
+  margin: 2px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.04em;
 }
 
 .subtitle {

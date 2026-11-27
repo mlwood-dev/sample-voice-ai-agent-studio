@@ -1,0 +1,17 @@
+{
+  "name": "Everwood Technologies x AWS-Sample",
+  "short_name": "Everwood x AWS-Sample",
+  "description": "Everwood Technologies voice agent studio, based on an official AWS Sample.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F4F1EA",
+  "theme_color": "#16332E",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

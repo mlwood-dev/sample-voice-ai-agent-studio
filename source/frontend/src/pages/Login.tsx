@@ -52,15 +52,7 @@ function Login() {
       <div className={styles.container}>
         <div className={styles.card}>
           <div className={styles.logo}>
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-                stroke="#6366f1"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <img src="/favicon.svg" alt="Everwood Technologies" width="32" height="32" />
             <h1>Set New Password</h1>
           </div>
           <p className={styles.subtitle}>
@@ -117,19 +109,14 @@ function Login() {
     <div className={styles.container}>
       <div className={styles.card}>
         <div className={styles.logo}>
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-              stroke="#6366f1"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          <h1>Conversational AI Voice Agent Studio</h1>
+          <img src="/favicon.svg" alt="Everwood Technologies" width="32" height="32" />
+          <div>
+            <h1>Everwood Technologies</h1>
+            <p className={styles.wordmarkSub}>x AWS-Sample</p>
+          </div>
         </div>
         <p className={styles.subtitle}>
-          Sign in to access the voice agent configuration tool.
+          Sign in to configure and test voice agents.
         </p>
 
         {error && <div className={styles.error}>{error}</div>}
@@ -174,10 +161,10 @@ function Login() {
       </div>
 
       <p style={{ textAlign: 'center', fontSize: '14px', color: '#64748b', marginTop: '16px' }}>
-        Need access? Contact <a href="mailto:lanaz@amazon.com" style={{ color: '#6366f1', fontWeight: 600 }}>Lana Zhang (lanaz@amazon.com)</a>
+        Need access? Contact <a href="mailto:michael@gdna.io" style={{ color: '#16332E', fontWeight: 600 }}>michael@gdna.io</a>
       </p>
 
-      <p className={styles.footer}>Powered by Amazon Bedrock</p>
+      <p className={styles.footer}>Based on an AWS Sample · Amazon Bedrock</p>
     </div>
   );
 }

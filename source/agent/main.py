@@ -24,6 +24,21 @@ VOICE = os.environ.get("VOICE", "tiffany")
 OPENAI_REALTIME_MODEL_ID = os.environ.get("OPENAI_REALTIME_MODEL_ID", "gpt-realtime")
 GEMINI_LIVE_MODEL_ID = os.environ.get("GEMINI_LIVE_MODEL_ID", "gemini-2.5-flash-native-audio-preview-09-2025")
 
+_cached_aws_account_id = None
+
+
+def _caller_aws_account_id():
+    """Resolve the caller AWS account. Never fall back to a hardcoded account ID."""
+    global _cached_aws_account_id
+    if _cached_aws_account_id:
+        return _cached_aws_account_id
+    account_id = os.environ.get("AWS_ACCOUNT_ID") or os.environ.get("CDK_DEFAULT_ACCOUNT")
+    if not account_id:
+        import boto3
+        account_id = boto3.client("sts").get_caller_identity()["Account"]
+    _cached_aws_account_id = account_id
+    return account_id
+
 
 def create_model(selected_model, api_keys, voice_id, sonic_model_id, params=None):
     """Create the bidirectional speech-to-speech model for the selected provider.
@@ -477,7 +492,7 @@ async def websocket_handler(websocket, request_context=None):
 
                                 response = client.invoke_agent_runtime(
                                     agentRuntimeArn=arn,
-                                    accountId=os.environ.get("AWS_ACCOUNT_ID", "307857433580"),
+                                    accountId=_caller_aws_account_id(),
                                     payload=json.dumps(a2a_payload).encode("utf-8"),
                                     contentType="application/json",
                                     accept="application/json",
