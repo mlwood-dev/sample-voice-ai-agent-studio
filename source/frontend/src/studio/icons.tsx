@@ -35,3 +35,7 @@ export const IconLogout = (p: IconProps) => <I {...p}><path d="M9 21H5a2 2 0 0 1
 export const IconSkills = (p: IconProps) => <I {...p}><path d="M12 3l2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5L12 3z" /></I>;
 export const IconAgent = (p: IconProps) => <I {...p}><circle cx="12" cy="8" r="4" /><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" /></I>;
 export const IconCheck = (p: IconProps) => <I {...p}><polyline points="20 6 9 17 4 12" /></I>;
+
+export const IconPause = (p: IconProps) => <I {...p}><rect x="6" y="4" width="4" height="16" /><rect x="14" y="4" width="4" height="16" /></I>;
+export const IconCopy = (p: IconProps) => <I {...p}><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></I>;
+export const IconDownload = (p: IconProps) => <I {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></I>;

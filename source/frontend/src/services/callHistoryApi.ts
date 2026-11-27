@@ -23,7 +23,9 @@ export interface CallSessionDetail {
   urls: {
     transcript?: string;
     audio?: string;
+    userAudio?: string;
     events?: string;
+    turnAudio?: Record<string, string>;
   };
 }
 
