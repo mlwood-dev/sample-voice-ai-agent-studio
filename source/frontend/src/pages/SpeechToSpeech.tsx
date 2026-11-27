@@ -67,7 +67,7 @@ function SpeechToSpeech() {
     >
       <div className={styles.container}>
         <div className={styles.modelList}>
-          {MODELS.map((model) => (
+          {MODELS.filter((model) => !model.requiresKey).map((model) => (
             <button
               key={model.id}
               className={`${styles.modelCard} ${
@@ -94,6 +94,25 @@ function SpeechToSpeech() {
           ))}
         </div>
 
+        <details style={{ margin: '8px 0 16px' }} open={MODELS.some((m) => m.requiresKey && m.id === selectedModel)}>
+          <summary style={{ cursor: 'pointer', fontWeight: 600, fontSize: 14 }}>Other providers</summary>
+          <div className={styles.modelList} style={{ marginTop: 12 }}>
+            {MODELS.filter((model) => model.requiresKey).map((model) => (
+              <button
+                key={model.id}
+                className={`${styles.modelCard} ${selectedModel === model.id ? styles.modelSelected : ''}`}
+                onClick={() => dispatch({ type: 'SET_MODEL', payload: [model.id] })}
+              >
+                <div className={styles.modelInfo}>
+                  <h3 className={styles.modelName}>{model.name}</h3>
+                  <span className={styles.modelProvider}>{model.provider}</span>
+                  <p className={styles.modelDesc}>{model.desc}</p>
+                </div>
+                {selectedModel === model.id && <div className={styles.badge}>Selected</div>}
+              </button>
+            ))}
+          </div>
+        </details>
         {/* API Key input for OpenAI */}
         {selectedModel === 'openai-realtime' && (
           <div className={styles.apiKeySection}>
@@ -144,14 +163,14 @@ function SpeechToSpeech() {
           </div>
         )}
 
-        <div className={styles.infoBox}>
-          <strong><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>How it works</strong>
+        <details className={styles.infoBox}>
+          <summary><strong><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>How it works</strong></summary>
           <p>
             All models use Strands BidiAgent for orchestration. Nova Sonic uses
             Bedrock directly (no key needed). OpenAI and Gemini require your own
             API key which is passed to the agent at session start.
           </p>
-        </div>
+        </details>
       </div>
     </PageWrapper>
   );

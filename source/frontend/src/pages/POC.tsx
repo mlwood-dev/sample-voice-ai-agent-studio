@@ -9,6 +9,8 @@ import type { SavedTool } from '../services/toolsApi';
 import { notifyAgentListChanged } from '../events/agentEvents';
 import PageWrapper from '../components/PageWrapper';
 import styles from './POC.module.css';
+import { LiveCallFrame } from './studio/LiveCallFrame';
+import { listPhoneMappings, type PhoneMapping } from '../services/phoneMappingsApi';
 
 type ConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'error';
 
@@ -114,6 +116,10 @@ function POC() {
   const audioPlayerRef = useRef<AudioContext | null>(null);
   const transcriptEndRef = useRef<HTMLDivElement | null>(null);
   const isRecordingRef = useRef(false);
+  const mutedRef = useRef(false);
+  const [muted, setMuted] = useState(false);
+  const [endToast, setEndToast] = useState<string | null>(null);
+  const [mappedNumber, setMappedNumber] = useState<string | null>(null);
 
   // Auto-scroll transcript
   useEffect(() => {
@@ -353,6 +359,7 @@ function POC() {
 
       processor.onaudioprocess = (e) => {
         if (!isRecordingRef.current) return;
+        if (mutedRef.current) return;
         if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
 
         const inputData = e.inputBuffer.getChannelData(0);
@@ -698,6 +705,43 @@ function POC() {
     setAgentSpeaking(false);
   };
 
+
+  useEffect(() => {
+    const agentId = state.editingDemoId;
+    if (!agentId) { setMappedNumber(null); return; }
+    listPhoneMappings()
+      .then((rows: PhoneMapping[]) => {
+        const hit = rows.find((m) => m.demoId === agentId);
+        setMappedNumber(hit ? hit.phoneNumber : null);
+      })
+      .catch(() => setMappedNumber(null));
+  }, [state.editingDemoId]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement | null)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (agentSpeaking) stopAudioPlayback();
+        else if (!isRecordingRef.current) handleStartConversation();
+      } else if (e.key === 'm' || e.key === 'M') {
+        mutedRef.current = !mutedRef.current;
+        setMuted(mutedRef.current);
+      } else if (e.key === 'Escape') {
+        endAndLeave();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
+
+  const endAndLeave = () => {
+    handleStopConversation();
+    setEndToast('Saved to Call history');
+    setTimeout(() => navigate('/calls'), 600);
+  };
+
   const getSteps = () => {
     if (state.path === 'minimal') {
       return [
@@ -718,519 +762,29 @@ function POC() {
   };
 
   return (
-    <PageWrapper
-      title={agentName ? `Try: ${agentName}` : "Try Your Voice Agent"}
-      subtitle={state.telephonyEnabled && state.phoneNumber
-        ? `Test via browser mic below, or call ${formatPhoneNumber(state.phoneNumber)} from your phone.`
-        : "Start a live voice conversation with your agent using your browser microphone."
-      }
-      steps={getSteps()}
-      onBack={() => navigate('/summary')}
-    >
-      <div className={styles.container}>
-        {/* Save agent — available regardless of telephony/channel */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '10px', marginBottom: '12px' }}>
-          {saveSuccess && (
-            <span style={{ fontSize: '13px', color: '#16a34a', fontWeight: 600 }}>✓ Saved</span>
-          )}
-          <button
-            className={styles.startBtn}
-            onClick={handleSaveAgent}
-            disabled={saving}
-          >
-            {saving
-              ? 'Saving…'
-              : state.editingDemoId
-                ? '💾 Save Changes'
-                : '💾 Save Agent'}
-          </button>
-        </div>
-
-        {/* Channel options — side by side */}
-        <div className={styles.demoInfo}>
-          <div className={styles.channelGrid}>
-            {/* Web Chat option */}
-            <div className={`${styles.channelCard} ${!state.telephonyEnabled || !state.phoneNumber ? styles.channelActive : ''}`}>
-              <div className={styles.channelIcon}>
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                  <line x1="9" y1="10" x2="9.01" y2="10"/>
-                  <line x1="12" y1="10" x2="12.01" y2="10"/>
-                  <line x1="15" y1="10" x2="15.01" y2="10"/>
-                </svg>
-              </div>
-              <h3 className={styles.channelTitle}>Web Chat</h3>
-              <p className={styles.channelDesc}>Talk using your browser microphone</p>
-              <button
-                className={styles.startBtn}
-                onClick={() => { setChatPopupOpen(true); }}
-              >
-                Open Chat
-              </button>
-            </div>
-
-            {/* Telephony option — Twilio PSTN */}
-            <div className={`${styles.channelCard} ${!(state.telephonyEnabled && state.phoneNumber) ? styles.channelDisabled : ''}`}>
-              <div className={styles.channelIcon}>
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
-                </svg>
-              </div>
-              <h3 className={styles.channelTitle}>Phone Call</h3>
-              <p style={{ fontSize: '11px', color: '#94a3b8', marginTop: '-4px', marginBottom: '6px' }}>via Twilio PSTN</p>
-              {!(state.telephonyEnabled && state.phoneNumber) ? (
-                <p className={styles.channelDesc}>Phone number not configured</p>
-              ) : !(saveSuccess || isFromSavedAgent || state.editingDemoId) ? (
-                <>
-                  <p className={styles.channelDesc}>
-                    Call {formatPhoneNumber(state.phoneNumber)}
-                  </p>
-                  <button
-                    className={styles.startBtn}
-                    onClick={async () => {
-                      const name = window.prompt('Agent name:', agentName || 'My Agent');
-                      if (!name) return;
-                      try {
-                        setSaving(true);
-                        await createDemo({ name, config: wizardStateToConfig(state) });
-                        setSaveSuccess(true);
-                        notifyAgentListChanged();
-                      } catch (err) {
-                        alert(err instanceof Error ? err.message : 'Failed to save');
-                      } finally {
-                        setSaving(false);
-                      }
-                    }}
-                    disabled={saving}
-                  >
-                    {saving ? 'Saving...' : '💾 Save to Activate Phone'}
-                  </button>
-                </>
-              ) : (
-                <>
-                  <p className={styles.channelDesc}>
-                    Call {formatPhoneNumber(state.phoneNumber)}
-                  </p>
-                  <a href={`tel:${state.phoneNumber}`} className={styles.phoneCallBtn}>
-                    Dial Now
-                  </a>
-                </>
-              )}
-            </div>
-
-          </div>
-
-        </div>
-
-        {/* Collapsed config section */}
-        <details style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '12px 16px', marginTop: '16px' }}>
-          <summary style={{ fontSize: '13px', fontWeight: 600, color: '#94a3b8', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.3px' }}>Agent Configuration</summary>
-          <div style={{ marginTop: '12px', display: 'flex', gap: '16px' }}>
-            {/* Left: System Prompt (60%) */}
-            <div style={{ flex: '0 0 60%' }}>
-              <div style={{ fontSize: '11px', fontWeight: 600, color: '#64748b', marginBottom: '4px' }}>System Prompt</div>
-              <pre style={{ fontSize: '12px', color: '#334155', lineHeight: 1.5, whiteSpace: 'pre-wrap', margin: 0, background: 'white', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '10px', maxHeight: '300px', overflow: 'auto' }}>
-                {generateSystemPrompt() || '(no prompt configured)'}
-              </pre>
-            </div>
-            {/* Right: Tools (40%) */}
-            <div style={{ flex: '0 0 calc(40% - 16px)' }}>
-              <div style={{ fontSize: '11px', fontWeight: 600, color: '#64748b', marginBottom: '4px' }}>Tools ({state.agents.selectedAgents.length})</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                {state.agents.selectedAgents.length > 0 ? (
-                  state.agents.selectedAgents.map((id: string) => {
-                    const isReserved = id === 'endCallTool' || id === 'transferCall';
-                    const tool = availableTools.find((t) => `int:${t.id}` === id || t.id === id);
-                    const label = isReserved ? (id === 'endCallTool' ? 'End Call' : 'Transfer Call') : (tool ? tool.name : id.replace('int:', '').substring(0, 8) + '...');
-                    const typeLabel = tool ? (tool.type === 'webhook' ? 'API' : tool.type) : '';
-                    return (
-                      <div key={id} style={{ fontSize: '11px', padding: '4px 8px', background: isReserved ? '#f0fdf4' : 'white', border: `1px solid ${isReserved ? '#bbf7d0' : '#e2e8f0'}`, borderRadius: '4px', color: isReserved ? '#166534' : '#475569', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span>{label}</span>
-                        {isReserved ? <span style={{ fontSize: '9px', color: '#16a34a', fontWeight: 600 }}>SYSTEM</span> : typeLabel ? <span style={{ fontSize: '10px', color: '#94a3b8' }}>{typeLabel}</span> : null}
-                      </div>
-                    );
-                  })
-                ) : (
-                  <span style={{ fontSize: '11px', color: '#94a3b8' }}>No tools configured</span>
-                )}
-              </div>
-            </div>
-          </div>
-          {/* Mock mode warning */}
-          {state.useMock && (() => {
-            const missing = availableTools.filter((t) =>
-              state.agents.selectedAgents.includes(`int:${t.id}`) && !t.mockResponse
-            );
-            return missing.length > 0 ? (
-              <div style={{ marginTop: '10px', padding: '8px 12px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '6px', fontSize: '11px', color: '#92400e' }}>
-                ⚠️ Mock mode is on but {missing.length} tool{missing.length > 1 ? 's' : ''} missing mock response: <strong>{missing.map(t => t.name).join(', ')}</strong>. Add mock responses in Tool Management for realistic testing.
-              </div>
-            ) : null;
-          })()}
-        </details>
-
-        {error && (
-          <div className={styles.errorBox}>
-            <span>⚠️</span> {error}
-          </div>
-        )}
-
-        {/* Webchat popup widget */}
-        {(isRecording || connectionStatus === 'connected' || transcript.length > 0) && !chatPopupOpen && (
-          <button
-            type="button"
-            className={styles.chatFab}
-            onClick={() => setChatPopupOpen(true)}
-            aria-label="Open voice chat"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          </button>
-        )}
-        {chatPopupOpen && (
-        <div className={styles.chatPopup}>
-          {/* Popup header */}
-          <div className={styles.chatHeader}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
-              </div>
-              <div>
-                <div style={{ fontSize: '14px', fontWeight: 600, letterSpacing: '-0.2px' }}>{agentName || 'Voice Agent'}</div>
-                <div style={{ fontSize: '11px', opacity: 0.7 }}>
-                  {connectionStatus === 'connected' ? '● Connected' : connectionStatus === 'connecting' ? '○ Connecting...' : '○ Ready'}
-                </div>
-              </div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div
-                onClick={() => dispatch({ type: 'SET_USE_MOCK', payload: !state.useMock })}
-                title={state.useMock ? 'Mock tools (click for live)' : 'Live tools (click for mock)'}
-                style={{ width: '30px', height: '16px', borderRadius: '8px', background: state.useMock ? '#f59e0b' : 'rgba(255,255,255,0.25)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s' }}
-              >
-                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: 'white', position: 'absolute', top: '2px', left: state.useMock ? '16px' : '2px', transition: 'left 0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.2)' }} />
-              </div>
-              <span style={{ fontSize: '10px', opacity: 0.7 }}>{state.useMock ? 'Mock' : 'Live'}</span>
-              <div style={{ position: 'relative', display: 'inline-flex' }}>
-                <svg
-                  width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                  style={{ opacity: 0.6, cursor: 'pointer' }}
-                  onClick={(e) => {
-                    const el = (e.currentTarget.parentElement as HTMLElement).querySelector('[data-mock-tip]') as HTMLElement;
-                    if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
-                  }}
-                >
-                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
-                </svg>
-                <div data-mock-tip="" style={{ display: 'none', position: 'absolute', top: '20px', right: 0, width: '240px', background: '#1e293b', color: 'white', fontSize: '11px', lineHeight: 1.5, padding: '10px 12px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.2)', zIndex: 200 }}>
-                  <strong>Mock Mode</strong> — For testing only. Tools return predefined responses instead of calling real endpoints. Does not affect phone calls, SIP, or other integrations. Only this session is affected. Toggle off for live integrations. Takes effect on next connection.
-                </div>
-              </div>
-              <button onClick={() => { setChatPopupOpen(false); handleStopConversation(); }} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', cursor: 'pointer', fontSize: '16px', lineHeight: 1, padding: '4px 6px', borderRadius: '6px' }}>✕</button>
-            </div>
-          </div>
-
-          {/* Call History & Log toggles */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '4px 16px', background: 'rgba(0,0,0,0.02)', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <div
-                onClick={() => dispatch({ type: 'SET_CALL_HISTORY_ENABLED', payload: !state.callHistoryEnabled })}
-                style={{ width: '24px', height: '13px', borderRadius: '7px', background: state.callHistoryEnabled ? '#10b981' : '#d1d5db', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}
-              >
-                <div style={{ width: '9px', height: '9px', borderRadius: '50%', background: 'white', position: 'absolute', top: '2px', left: state.callHistoryEnabled ? '13px' : '2px', transition: 'left 0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.2)' }} />
-              </div>
-              <span style={{ fontSize: '10px', color: state.callHistoryEnabled ? '#10b981' : '#94a3b8' }}>Chat History</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <div
-                onClick={() => dispatch({ type: 'SET_CALL_LOG_ENABLED', payload: !state.callLogEnabled })}
-                style={{ width: '24px', height: '13px', borderRadius: '7px', background: state.callLogEnabled ? '#6366f1' : '#d1d5db', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}
-              >
-                <div style={{ width: '9px', height: '9px', borderRadius: '50%', background: 'white', position: 'absolute', top: '2px', left: state.callLogEnabled ? '13px' : '2px', transition: 'left 0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.2)' }} />
-              </div>
-              <span style={{ fontSize: '10px', color: state.callLogEnabled ? '#6366f1' : '#94a3b8' }}>Raw Log</span>
-            </div>
-          </div>
-
-          {/* Transcript */}
-          {/* Mock mode warning for tools without mock responses */}
-          {state.useMock && (() => {
-            const toolsWithoutMock = availableTools.filter((t) =>
-              state.agents.selectedAgents.includes(`int:${t.id}`) && !t.mockResponse
-            );
-            return toolsWithoutMock.length > 0 ? (
-              <div style={{ padding: '8px 16px', background: '#fffbeb', borderBottom: '1px solid #fde68a', fontSize: '11px', color: '#92400e', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span>⚠️</span>
-                <span>{toolsWithoutMock.length} tool{toolsWithoutMock.length > 1 ? 's' : ''} missing mock response: {toolsWithoutMock.map(t => t.name).join(', ')}</span>
-              </div>
-            ) : null;
-          })()}
-          <div style={{ flex: 1, overflow: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '12px', background: 'white' }}>
-            {connectionStatus === 'connecting' ? (
-              <div style={{ textAlign: 'center', marginTop: '80px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-                {/* Animated connecting rings */}
-                <div style={{ position: 'relative', width: '80px', height: '80px' }}>
-                  <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: '3px solid transparent', borderTopColor: '#6366f1', animation: 'spin 1s linear infinite' }} />
-                  <div style={{ position: 'absolute', inset: '8px', borderRadius: '50%', border: '3px solid transparent', borderTopColor: '#a5b4fc', animation: 'spin 1.5s linear infinite reverse' }} />
-                  <div style={{ position: 'absolute', inset: '16px', borderRadius: '50%', border: '3px solid transparent', borderTopColor: '#c7d2fe', animation: 'spin 2s linear infinite' }} />
-                  <div style={{ position: 'absolute', inset: '24px', borderRadius: '50%', background: '#eef2ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
-                  </div>
-                </div>
-                <div>
-                  <p style={{ color: '#6366f1', fontSize: '14px', fontWeight: 600, margin: 0 }}>Connecting to agent...</p>
-                  <p style={{ color: '#94a3b8', fontSize: '11px', marginTop: '6px' }}>Setting up voice channel</p>
-                </div>
-                {/* Animated dots */}
-                <div style={{ display: 'flex', gap: '6px', marginTop: '4px' }}>
-                  {[0, 1, 2, 3].map((i) => (
-                    <div key={i} style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#a5b4fc', animation: `pulse 1.4s ease-in-out ${i * 0.2}s infinite` }} />
-                  ))}
-                </div>
-                <style>{`
-                  @keyframes spin { to { transform: rotate(360deg); } }
-                `}</style>
-              </div>
-            ) : transcript.length === 0 && !isRecording ? (
-              <div style={{ textAlign: 'center', marginTop: '60px' }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                </div>
-                <p style={{ color: '#94a3b8', fontSize: '13px', margin: 0 }}>Start a conversation to begin</p>
-                <p style={{ color: '#cbd5e1', fontSize: '11px', marginTop: '4px' }}>Click the microphone button below</p>
-              </div>
-            ) : transcript.length === 0 && isRecording ? (
-              <div style={{ textAlign: 'center', marginTop: '60px' }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#eef2ff', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', animation: 'pulse 2s infinite' }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
-                </div>
-                <p style={{ color: '#6366f1', fontSize: '13px', margin: 0, fontWeight: 500 }}>Listening...</p>
-                <p style={{ color: '#94a3b8', fontSize: '11px', marginTop: '4px' }}>Speak now or type below</p>
-              </div>
-            ) : (
-              transcript.map((entry, i) => (
-                <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: entry.role === 'user' ? 'flex-end' : 'flex-start' }}>
-                  <div style={{
-                    maxWidth: (entry as any).type === 'tool' ? '90%' : '75%',
-                    padding: (entry as any).type === 'tool' ? '6px 10px' : '10px 14px',
-                    borderRadius: entry.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                    background: (entry as any).type === 'tool' ? 'transparent' : entry.role === 'user' ? 'linear-gradient(135deg, #6366f1, #4f46e5)' : '#f1f5f9',
-                    color: (entry as any).type === 'tool' ? '#94a3b8' : entry.role === 'user' ? 'white' : '#1e293b',
-                    fontSize: (entry as any).type === 'tool' ? '11px' : '13px',
-                    lineHeight: 1.5,
-                    boxShadow: entry.role === 'user' && (entry as any).type !== 'tool' ? '0 2px 8px rgba(99,102,241,0.2)' : 'none',
-                    fontFamily: (entry as any).type === 'tool' ? 'monospace' : 'inherit',
-                    borderLeft: (entry as any).type === 'tool' ? '2px solid #e2e8f0' : 'none',
-                    wordBreak: (entry as any).type === 'tool' ? 'break-all' as any : 'normal' as any,
-                  }}>
-                    {entry.text}
-                  </div>
-                  {(entry as any).type !== 'tool' && (
-                    <span style={{ fontSize: '10px', color: '#cbd5e1', marginTop: '3px', padding: '0 6px' }}>{entry.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                  )}
-                </div>
-              ))
-            )}
-            {agentSpeaking && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 10px' }}>
-                <div style={{ display: 'flex', gap: '2px' }}>
-                  {[0, 1, 2].map((i) => (
-                    <div key={i} style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#6366f1', animation: `bounce 1.4s infinite ${i * 0.2}s` }} />
-                  ))}
-                </div>
-                <span style={{ fontSize: '11px', color: '#6366f1', fontWeight: 500 }}>Agent speaking</span>
-              </div>
-            )}
-            <div ref={transcriptEndRef} />
-          </div>
-
-          {/* Text input */}
-          <div style={{ padding: '12px 16px', borderTop: '1px solid #f1f5f9', background: 'white', display: 'flex', gap: '8px', flexShrink: 0 }}>
-            <input
-              type="text"
-              value={textInput}
-              onChange={(e) => setTextInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && textInput.trim() && wsRef.current?.readyState === WebSocket.OPEN) {
-                  wsRef.current.send(JSON.stringify({ type: 'bidi_text_input', text: textInput.trim(), role: 'user' }));
-                  setTranscript((prev) => [...prev, { role: 'user', text: textInput.trim(), timestamp: new Date() }]);
-                  setTextInput('');
-                }
-              }}
-              placeholder={connectionStatus === 'connected' ? 'Type a message...' : 'Connect first to chat'}
-              className={styles.chatInput}
-              disabled={connectionStatus !== 'connected'}
-            />
-            <button
-              onClick={() => {
-                if (textInput.trim() && wsRef.current?.readyState === WebSocket.OPEN) {
-                  wsRef.current.send(JSON.stringify({ type: 'bidi_text_input', text: textInput.trim(), role: 'user' }));
-                  setTranscript((prev) => [...prev, { role: 'user', text: textInput.trim(), timestamp: new Date() }]);
-                  setTextInput('');
-                }
-              }}
-              disabled={!textInput.trim() || connectionStatus !== 'connected'}
-              className={styles.chatSendBtn}
-              style={{ background: (!textInput.trim() || connectionStatus !== 'connected') ? '#e2e8f0' : '#6366f1' }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-            </button>
-          </div>
-
-          {/* Start/Stop controls */}
-          <div className={styles.chatControls}>
-            {!isRecording ? (
-              <button
-                type="button"
-                className={styles.chatStartBtn}
-                onClick={handleStartConversation}
-                disabled={connectionStatus === 'connecting'}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
-                {connectionStatus === 'connecting' ? 'Connecting...' : 'Start Conversation'}
-              </button>
-            ) : (
-              <button
-                type="button"
-                className={styles.chatStopBtn}
-                onClick={handleStopConversation}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
-                End Conversation
-              </button>
-            )}
-          </div>
-        </div>
-        )}
-
-        {/* Original voice interface (hidden — transcripts only in popup now) */}
-        <div className={styles.leftPanel} style={{ display: 'none' }}>
-          {/* Main Voice Interface */}
-          <div className={styles.voiceInterface}>
-          {/* Compact controls bar at top */}
-          <div className={styles.controlsBar}>
-            <div className={styles.controls}>
-              {isRecording && (
-                <button
-                  className={styles.stopBtn}
-                  onClick={handleStopConversation}
-                >
-                  ⏹ End
-                </button>
-              )}
-            </div>
-            <div className={styles.visualizerCompact}>
-              {isRecording && (
-                <div className={styles.waveContainer}>
-                  {[0.3, 0.2, 0.4, 0.15, 0.35].map((base, i) => (
-                    <div
-                      key={i}
-                      className={styles.wave}
-                      style={{
-                        transform: `scaleY(${base + audioLevel * (1 - base)})`,
-                        animationDelay: `${i * 0.08}s`,
-                      }}
-                    />
-                  ))}
-                </div>
-              )}
-              {agentSpeaking && !isRecording && (
-                <span className={styles.speakingLabel}>Agent speaking...</span>
-              )}
-              {!isRecording && !agentSpeaking && connectionStatus === 'connected' && (
-                <span className={styles.speakingLabel}>Connected</span>
-              )}
-            </div>
-          </div>
-
-          {/* Transcript area */}
-          <div className={styles.transcriptArea}>
-            <div className={styles.transcriptList}>
-              {transcript.length === 0 ? (
-                <p className={styles.placeholder}>
-                  Conversation transcript will appear here...
-                </p>
-              ) : (
-                transcript.map((entry, i) => (
-                  <div
-                    key={i}
-                    className={`${styles.message} ${
-                      entry.role === 'user' ? styles.userMsg : styles.agentMsg
-                    }`}
-                    style={(entry as any).type === 'tool' ? { background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '5px 10px', fontSize: '10px', fontFamily: 'monospace', color: '#b0b8c4', maxWidth: '95%', alignSelf: 'center', boxShadow: 'none' } : undefined}
-                  >
-                    {(entry as any).type !== 'tool' && (
-                      <div className={styles.msgHeader}>
-                        <span className={styles.msgRole}>
-                          {entry.role === 'user' ? 'You' : 'Agent'}
-                        </span>
-                        <span className={styles.msgTime}>
-                          {entry.timestamp.toLocaleTimeString()}
-                        </span>
-                      </div>
-                    )}
-                    <p style={(entry as any).type === 'tool' ? { margin: 0, wordBreak: 'break-all', color: '#94a3b8', fontSize: '11px' } : undefined}>{entry.text}</p>
-                  </div>
-                ))
-              )}
-              <div ref={transcriptEndRef} />
-            </div>
-          </div>
-
-          {/* Text input */}
-          <div className={styles.textInputArea}>
-            <input
-              className={styles.textInput}
-              type="text"
-              placeholder="Type a message..."
-              value={textInput}
-              onChange={(e) => setTextInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && textInput.trim() && wsRef.current?.readyState === WebSocket.OPEN) {
-                  wsRef.current.send(JSON.stringify({ type: 'bidi_text_input', text: textInput.trim(), role: 'user' }));
-                  setTranscript((prev) => [...prev, { role: 'user', text: textInput.trim(), timestamp: new Date() }]);
-                  setTextInput('');
-                }
-              }}
-              disabled={connectionStatus !== 'connected' && !isRecording}
-            />
-            <button
-              className={styles.sendBtn}
-              onClick={() => {
-                if (textInput.trim() && wsRef.current?.readyState === WebSocket.OPEN) {
-                  wsRef.current.send(JSON.stringify({ type: 'bidi_text_input', text: textInput.trim(), role: 'user' }));
-                  setTranscript((prev) => [...prev, { role: 'user', text: textInput.trim(), timestamp: new Date() }]);
-                  setTextInput('');
-                }
-              }}
-              disabled={!textInput.trim() || (connectionStatus !== 'connected' && !isRecording)}
-            >
-              Send
-            </button>
-          </div>
-        </div>
-        </div>
-
-        {/* Tech breakdown slide-over panel */}
-        {showReport && (
-          <div className={styles.overlay} onClick={() => setShowReport(false)}>
-            <div className={styles.slidePanel} onClick={(e) => e.stopPropagation()}>
-              <div className={styles.slidePanelHeader}>
-                <h3>Technical Breakdown</h3>
-                <button className={styles.closeBtn} onClick={() => setShowReport(false)}>✕</button>
-              </div>
-              <div className={styles.slidePanelBody}>
-                <TechnicalReport state={state} />
-              </div>
-            </div>
-          </div>
-        )}
-
-      </div>
-    </PageWrapper>
+    <LiveCallFrame
+      agentName={agentName || state.editingDemoName || 'Voice agent'}
+      status={connectionStatus}
+      isRecording={isRecording}
+      agentSpeaking={agentSpeaking}
+      muted={muted}
+      transcript={transcript}
+      error={error}
+      phoneLabel={mappedNumber}
+      toast={endToast}
+      transcriptEndRef={transcriptEndRef}
+      onBack={() => navigate(isFromSavedAgent ? '/agents' : '/summary')}
+      onStart={() => { void handleStartConversation(); }}
+      onEnd={endAndLeave}
+      onToggleMute={() => {
+        mutedRef.current = !mutedRef.current;
+        setMuted(mutedRef.current);
+      }}
+      onInterrupt={() => stopAudioPlayback()}
+    />
   );
 }
 
-// Technical Breakdown Report Component
 function TechnicalReport({ state }: { state: any }) {
   const [tools, setTools] = useState<any[]>([]);
   useEffect(() => { listTools().then(setTools).catch(() => {}); }, []);
