@@ -24,9 +24,9 @@
   width: 100%;
 }
 
+.tabsSlot { display: block; }
+
 @media (min-width: 768px) {
   .content { padding: 32px 40px; }
   .tabsSlot { display: none; }
 }
-
-.tabsSlot { display: block; }
