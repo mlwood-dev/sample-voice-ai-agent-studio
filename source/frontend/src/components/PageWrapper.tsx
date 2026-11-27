@@ -50,6 +50,13 @@ function PageWrapper({
   return (
     <div className={styles.wrapper}>
       {steps && (
+        <>
+        <div className={styles.stepCompact}>
+          Step {(steps.findIndex((s) => s.active) + 1) || steps.length} of {steps.length}
+          <div className={styles.stepBar}>
+            <div className={styles.stepBarFill} style={{ width: `${(Math.max(steps.findIndex((s) => s.active), 0) / Math.max(steps.length - 1, 1)) * 100}%` }} />
+          </div>
+        </div>
         <div className={styles.steps}>
           {steps.map((step, i) => (
             <div
@@ -66,6 +73,7 @@ function PageWrapper({
             </div>
           ))}
         </div>
+        </>
       )}
 
       {/* Inline editable agent name */}

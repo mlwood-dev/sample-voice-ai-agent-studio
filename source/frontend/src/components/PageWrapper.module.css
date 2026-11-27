@@ -179,3 +179,11 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.stepCompact { display: none; font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 8px; }
+.stepBar { height: 4px; background: #e2e8f0; border-radius: 99px; margin-top: 8px; overflow: hidden; }
+.stepBarFill { height: 100%; background: var(--accent); border-radius: 99px; }
+@media (max-width: 767px) {
+  .stepCompact { display: block; }
+  .steps { display: none; }
+}

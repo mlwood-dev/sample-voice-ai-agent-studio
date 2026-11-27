@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWizard } from '../context/WizardContext';
 import PageWrapper from '../components/PageWrapper';
@@ -10,6 +10,12 @@ function Agents() {
   const navigate = useNavigate();
   const { state, dispatch } = useWizard();
   const [workflowData, setWorkflowData] = useState<WorkflowData | null>(null);
+  const [phone, setPhone] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => {
+    const onResize = () => setPhone(window.innerWidth < 768);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   const getSteps = () => {
     if (state.path === 'minimal') {
@@ -61,6 +67,11 @@ function Agents() {
       onBack={handleBack}
       nextLabel="Next"
     >
+      {phone && (
+        <div style={{ background: '#eef2ff', color: '#3730a3', borderRadius: 12, padding: '12px 14px', marginBottom: 12, fontSize: 14 }}>
+          Conversation flow is read-only on a phone. Edit on a larger screen.
+        </div>
+      )}
       {/* Agent speaks first toggle */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px', padding: '10px 14px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
         <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', gap: '8px' }}>
@@ -83,7 +94,7 @@ function Agents() {
           <span style={{ fontSize: '11px', color: '#94a3b8' }}>{state.useMock ? 'Tools return mock responses' : 'Tools call real endpoints'}</span>
         </label>
       </div>
-      <WorkflowCanvas
+      <WorkflowCanvas readOnly={phone}
         initialData={state.workflow || null}
         initialPrompt={state.prompt.instructions || null}
         initialTools={state.agents.selectedAgents || null}

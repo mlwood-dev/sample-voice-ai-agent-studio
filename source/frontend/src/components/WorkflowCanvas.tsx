@@ -33,6 +33,7 @@ interface WorkflowCanvasProps {
   initialTools?: string[] | null;
   onSave?: (data: WorkflowData) => void;
   onStateChange?: (data: WorkflowData) => void;
+  readOnly?: boolean;
 }
 
 
@@ -139,7 +140,7 @@ const nodeTypes = { step: StepNode, start: StartNode, end: EndNode, tool: ToolNo
 
 
 
-function WorkflowCanvas({ onGenerate, initialData, initialPrompt, initialTools, onSave, onStateChange }: WorkflowCanvasProps) {
+function WorkflowCanvas({ onGenerate, initialData, initialPrompt, initialTools, onSave, onStateChange, readOnly }: WorkflowCanvasProps) {
   // Safely access wizard context (may not be available in all render contexts)
   const wizardCtx = useContext(WizardContext);
   const state = wizardCtx?.state ?? null;
@@ -827,10 +828,13 @@ function WorkflowCanvas({ onGenerate, initialData, initialPrompt, initialTools, 
         <ReactFlow
           nodes={nodes}
           edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onNodeClick={onNodeClick}
+          onNodesChange={readOnly ? undefined : onNodesChange}
+          onEdgesChange={readOnly ? undefined : onEdgesChange}
+          onConnect={readOnly ? undefined : onConnect}
+          onNodeClick={readOnly ? undefined : onNodeClick}
+          nodesDraggable={!readOnly}
+          nodesConnectable={!readOnly}
+          elementsSelectable={!readOnly}
           nodeTypes={nodeTypes}
           defaultEdgeOptions={defaultEdgeOptions}
           defaultViewport={{ x: 50, y: 20, zoom: 1 }}
