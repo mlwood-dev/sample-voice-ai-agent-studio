@@ -217,14 +217,14 @@ function EvalSuites() {
           <tbody>
             {sortedSuites.map((suite) => (
               <tr key={suite.id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/eval-suites/${suite.id}`)}>
-                <td className={styles.demoName} style={{ color: '#6366f1', fontWeight: 600 }}>
+                <td className={styles.demoName} data-label="Name" style={{ color: '#6366f1', fontWeight: 600 }}>
                   {suite.name}
                 </td>
-                <td className={styles.meta} title={suite.description || ''} style={{ maxWidth: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{suite.description || '—'}</td>
-                <td className={styles.meta}>{getPassFailLabel(suite.id)}</td>
-                <td className={styles.meta}>{suite.userEmail?.split('@')[0] || '—'}</td>
-                <td className={styles.meta}>{formatDate(suite.createdAt)}</td>
-                <td onClick={(e) => e.stopPropagation()}>
+                <td className={styles.meta} data-label="Description" title={suite.description || ''} style={{ maxWidth: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{suite.description || '—'}</td>
+                <td className={styles.meta} data-label="Results">{getPassFailLabel(suite.id)}</td>
+                <td className={styles.meta} data-label="Created By">{suite.userEmail?.split('@')[0] || '—'}</td>
+                <td className={styles.meta} data-label="Created">{formatDate(suite.createdAt)}</td>
+                <td data-label="Actions" onClick={(e) => e.stopPropagation()}>
                   <button
                     title="Delete"
                     onClick={(e) => handleDelete(suite.id, e)}
