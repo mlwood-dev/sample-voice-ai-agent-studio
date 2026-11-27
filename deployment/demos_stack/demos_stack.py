@@ -681,7 +681,9 @@ class DemosStack(Stack):
                 "EVAL_RESULTS_BUCKET": self.eval_results_bucket.bucket_name,
                 "AGENTCORE_RUNTIME_ARN": self.agentcore_runtime_arn,
             },
-            reserved_concurrent_executions=10,
+            # Do not reserve concurrency. Some accounts (including this one)
+            # have a Lambda limit of 10, which is also the minimum unreserved
+            # pool size, so reserved_concurrent_executions=10 is rejected.
         )
 
         # Grant Runner permissions
