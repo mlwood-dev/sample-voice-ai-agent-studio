@@ -2,7 +2,6 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 import { getDemo } from '../services/demosApi';
 import { useWizard } from '../context/WizardContext';
-import type { HostType, FrameworkType, PipelineType } from '../context/WizardContext';
 import type { Demo } from '../services/demosApi';
 import WorkflowCanvas from '../components/WorkflowCanvas';
 import type { WorkflowData } from '../components/workflowUtils';
@@ -12,6 +11,7 @@ import { updateDemo, createDemo } from '../services/demosApi';
 import { listTools } from '../services/toolsApi';
 import type { SavedTool } from '../services/toolsApi';
 import { notifyAgentListChanged } from '../events/agentEvents';
+import { applyDemoToWizard } from '../studio/loadAgent';
 import EvaluationTab from '../components/EvaluationTab';
 import CallHistoryTab from '../components/CallHistoryTab';
 
@@ -74,23 +74,8 @@ function AgentDetail() {
 
   const handleEdit = () => {
     if (!demo) return;
-    const config = demo.config;
-    dispatch({ type: 'SET_HOST', payload: (config.host || 'agentcore') as HostType });
-    dispatch({ type: 'SET_FRAMEWORK', payload: (config.framework || 'strands-bidiagent') as FrameworkType });
-    dispatch({ type: 'SET_MODEL', payload: config.model || ['nova-2-sonic'] });
-    dispatch({ type: 'SET_PIPELINE', payload: (config.pipeline || 'speech-to-speech') as PipelineType });
-    dispatch({ type: 'SET_VOICE', payload: config.voice || { voiceId: '', language: 'en-US', gender: 'female' } });
-    dispatch({ type: 'SET_AGENTS', payload: { selectedAgents: config.tools || [], customTools: config.customTools || [] } });
-    dispatch({
-      type: 'SET_PROMPT',
-      payload: config.prompt || { greeting: config.greeting || '', instructions: config.systemPrompt || '' },
-    });
-    dispatch({ type: 'SET_TELEPHONY_ENABLED', payload: config.telephonyEnabled ?? false });
-    dispatch({ type: 'SET_AGENT_START_FIRST', payload: config.agentStartFirst ?? true });
-    dispatch({ type: 'SET_PHONE', payload: config.telephony?.phoneNumber || '' });
-    dispatch({ type: 'SET_USE_MOCK', payload: config.useMock ?? true });
-    dispatch({ type: 'SET_EDITING_DEMO', payload: { id: demo.id, name: demo.name } });
-    navigate('/voice-1s');
+    applyDemoToWizard(demo, dispatch);
+    navigate('/summary');
   };
 
   if (loading) return <div style={{ padding: '32px', color: '#94a3b8' }}>Loading...</div>;
@@ -109,14 +94,14 @@ function AgentDetail() {
   return (
     <div style={{ width: '100%' }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
         <div>
           <h1 style={{ fontSize: '22px', fontWeight: 700, color: '#0f172a' }}>{demo.name}</h1>
           <p style={{ fontSize: '15px', color: '#94a3b8', marginTop: '2px' }}>
             Created {new Date(demo.createdAt).toLocaleDateString()} · {config.pipeline || 'speech-to-speech'} · {config.model?.[0] || 'nova-2-sonic'}
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
           {activeTab !== 'summary' && activeTab !== 'dashboard' && (
             <>
               {saveStatus === 'saved' && <span style={{ fontSize: '13px', color: '#10b981', fontWeight: 500 }}>✓ Saved</span>}
@@ -161,14 +146,14 @@ function AgentDetail() {
               </button>
             </>
           )}
-          {activeTab === 'summary' && (
+          {(activeTab === 'summary' || activeTab === 'dashboard') && (
             <>
               <button onClick={() => { handleEdit(); navigate('/poc', { state: { fromSavedAgent: true, agentName: demo.name } }); }} style={{ padding: '8px 16px', background: '#6366f1', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 600, color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                 Try It
               </button>
               <button
-                onClick={() => { handleEdit(); navigate('/voice-1s'); }}
+                onClick={handleEdit}
                 style={{ padding: '8px 16px', background: '#6366f1', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 600, color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

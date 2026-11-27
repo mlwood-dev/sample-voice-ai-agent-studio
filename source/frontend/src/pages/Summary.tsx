@@ -134,7 +134,7 @@ function Summary() {
     try {
       await persist();
       notifyAgentListChanged();
-      setToast('Saved as draft');
+      setToast(state.editingDemoId ? 'Saved' : 'Saved as draft');
       setTimeout(() => setToast(null), 2500);
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : 'Failed to save agent');
@@ -173,19 +173,26 @@ function Summary() {
   return (
     <div className={styles.page}>
       <div className={styles.topBar}>
-        <button type="button" className={styles.iconBtn} aria-label="Back" onClick={() => navigate('/start')}><IconBack /></button>
-        <span className={styles.stepLabel}>Review draft</span>
+        <button type="button" className={styles.iconBtn} aria-label="Back" onClick={() => navigate(state.editingDemoId ? `/agents/${state.editingDemoId}` : '/start')}><IconBack /></button>
+        <span className={styles.stepLabel}>{state.editingDemoId ? 'Edit agent' : 'Review draft'}</span>
         <button type="button" className={styles.iconBtn} aria-label="Close" onClick={() => navigate('/agents')}><IconClose /></button>
       </div>
-      <div className={styles.stepper}>
-        <div className={styles.stepLabel}>Step 2 of 3 · Review draft</div>
-        <div className={styles.stepTrack}>
-          <span className={`${styles.stepSeg} ${styles.stepSegOn}`} />
-          <span className={`${styles.stepSeg} ${styles.stepSegOn}`} />
-          <span className={styles.stepSeg} />
-        </div>
-      </div>
-      <div className={styles.banner}>Nothing is live until you approve it.</div>
+      {!state.editingDemoId && (
+        <>
+          <div className={styles.stepper}>
+            <div className={styles.stepLabel}>Step 2 of 3 · Review draft</div>
+            <div className={styles.stepTrack}>
+              <span className={`${styles.stepSeg} ${styles.stepSegOn}`} />
+              <span className={`${styles.stepSeg} ${styles.stepSegOn}`} />
+              <span className={styles.stepSeg} />
+            </div>
+          </div>
+          <div className={styles.banner}>Nothing is live until you approve it.</div>
+        </>
+      )}
+      {state.editingDemoId && (
+        <div className={styles.banner}>Changes apply the next time you talk to this agent.</div>
+      )}
 
       <label className={styles.fieldLabel} style={{ marginTop: 16 }}>Agent name</label>
       <input className={styles.input} value={agentName} onChange={(e) => setAgentName(e.target.value)} />
@@ -228,12 +235,20 @@ function Summary() {
 
       {saveError && <p className={styles.error}>{saveError}</p>}
       <div className={styles.pinFooter}>
-        <button type="button" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnBlock}`} disabled={saving} onClick={() => void handleSaveAndTry()}>
-          {saving ? 'Saving…' : 'Save & try it'}
-        </button>
-        <button type="button" className={`${styles.btn} ${styles.btnSecondary} ${styles.btnBlock}`} style={{ marginTop: 8 }} disabled={saving} onClick={() => void handleSaveDraft()}>
-          Save as draft
-        </button>
+        {state.editingDemoId ? (
+          <button type="button" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnBlock}`} disabled={saving} onClick={() => void handleSaveDraft()}>
+            {saving ? 'Saving…' : 'Save'}
+          </button>
+        ) : (
+          <>
+            <button type="button" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnBlock}`} disabled={saving} onClick={() => void handleSaveAndTry()}>
+              {saving ? 'Saving…' : 'Save & try it'}
+            </button>
+            <button type="button" className={`${styles.btn} ${styles.btnSecondary} ${styles.btnBlock}`} style={{ marginTop: 8 }} disabled={saving} onClick={() => void handleSaveDraft()}>
+              Save as draft
+            </button>
+          </>
+        )}
       </div>
       {toast && <div className={styles.toast} role="status">{toast}</div>}
 
