@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   listPhoneMappings,
   upsertPhoneMapping,
@@ -9,6 +10,8 @@ import {
   type TelephonyConfigStatus,
 } from '../../services/phoneMappingsApi';
 import { listDemos, type Demo } from '../../services/demosApi';
+import PSTN from './PSTN';
+import SIP from './SIP';
 
 const PROVIDER_LABELS: Record<PhoneProvider, string> = {
   pstn: 'PSTN (Twilio Conversation Relay)',
@@ -18,6 +21,8 @@ const PROVIDER_LABELS: Record<PhoneProvider, string> = {
 const emptyForm = { phoneNumber: '', demoId: '', provider: 'pstn' as PhoneProvider };
 
 function PhoneNumbers() {
+  const [params] = useSearchParams();
+  const guide = params.get('guide');
   const [mappings, setMappings] = useState<PhoneMapping[]>([]);
   const [agents, setAgents] = useState<Demo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -137,8 +142,14 @@ function PhoneNumbers() {
 
   return (
     <div style={{ width: '100%' }}>
+      <style>{`
+        @media (max-width: 767px) {
+          .telephony-form { flex-direction: column; align-items: stretch !important; }
+          .telephony-form > div, .telephony-form input, .telephony-form select, .telephony-form button { width: 100% !important; min-height: 48px; }
+        }
+      `}</style>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-        <h1 style={{ fontSize: '22px', fontWeight: 700, color: '#0f172a' }}>Phone Numbers</h1>
+        <h1 style={{ fontSize: '22px', fontWeight: 700, color: '#0f172a' }}>Telephony</h1>
         <button
           onClick={loadAll}
           style={{ padding: '8px 16px', background: '#fff', color: '#475569', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
@@ -171,7 +182,7 @@ function PhoneNumbers() {
         <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a', marginBottom: '12px' }}>
           {editingPhone ? `Edit mapping for ${editingPhone}` : 'Add phone number mapping'}
         </div>
-        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+        <div className="telephony-form" style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
             <label style={{ fontSize: '12px', color: '#64748b' }}>Phone number (E.164)</label>
             <input
@@ -285,6 +296,22 @@ function PhoneNumbers() {
             by the telephony bridge to route incoming calls.
           </p>
         </div>
+      </div>
+
+      <details open={guide === 'twilio' || guide === 'pstn'} style={{ marginTop: 24, background: '#fff', border: '1px solid #e2e8f0', borderRadius: 16, padding: 16 }}>
+        <summary style={{ cursor: 'pointer', fontWeight: 700, fontSize: 16 }}>Twilio setup guide</summary>
+        <div style={{ marginTop: 16 }}><PSTN /></div>
+      </details>
+      <details open={guide === 'sip'} style={{ marginTop: 16, background: '#fff', border: '1px solid #e2e8f0', borderRadius: 16, padding: 16 }}>
+        <summary style={{ cursor: 'pointer', fontWeight: 700, fontSize: 16 }}>SIP setup guide</summary>
+        <div style={{ marginTop: 16 }}><SIP /></div>
+      </details>
+      <div style={{ marginTop: 16, background: '#eef2ff', border: '1px solid #c7d2fe', borderRadius: 10, padding: 16 }}>
+        <p style={{ fontSize: 13, fontWeight: 600, color: '#3730a3', marginBottom: 4 }}>Credentials are not stored in the app</p>
+        <p style={{ fontSize: 13, color: '#4338ca', lineHeight: 1.6 }}>
+          Provider credentials are never entered here. Telephony bridges read AWS Secrets Manager — run
+          <code> telephony/pstn/configure.sh</code> or <code>telephony/sip/configure.sh</code>.
+        </p>
       </div>
     </div>
   );

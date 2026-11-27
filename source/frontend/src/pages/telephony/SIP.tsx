@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 const card: React.CSSProperties = {
   background: '#f8fafc',
   border: '1px solid #e2e8f0',
@@ -26,6 +27,23 @@ const codeBlock: React.CSSProperties = {
   overflowX: 'auto',
   whiteSpace: 'pre',
 };
+
+
+function CodeBlock({ children }: { children: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <div style={{ position: 'relative', maxWidth: '100%', marginTop: 10 }}>
+      <pre style={{ ...codeBlock, margin: 0, maxWidth: '100%' }}>{children}</pre>
+      <button
+        type="button"
+        onClick={() => { navigator.clipboard.writeText(children).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); }); }}
+        style={{ position: 'absolute', top: 8, right: 8, background: '#1e293b', color: '#fff', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+      >
+        {copied ? 'Copied' : 'Copy'}
+      </button>
+    </div>
+  );
+}
 
 function Step({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
   return (
@@ -105,13 +123,13 @@ function SIP() {
         <Step n={2} title="Configure the bridge">
           Run the interactive setup. It generates a random webhook secret and stores the bridge config in AWS
           Secrets Manager — no secrets on disk. See <code>telephony/sip/README.md</code>.
-          <div style={{ ...codeBlock, marginTop: '10px' }}>{`cd telephony/sip
-./configure.sh`}</div>
+          <CodeBlock>{`cd telephony/sip
+./configure.sh`}</CodeBlock>
         </Step>
 
         <Step n={3} title="Deploy and run the relay">
           Deploy the drachtio + rtpengine + bridge stack, starting the bridge with the secret name from step 2:
-          <div style={{ ...codeBlock, marginTop: '10px' }}>{`CONFIG_SECRET_NAME=voice-agent-poc/sip node index.js`}</div>
+          <CodeBlock>{`CONFIG_SECRET_NAME=voice-agent-poc/sip node index.js`}</CodeBlock>
           The bridge's IAM role needs <code>secretsmanager:GetSecretValue</code> on that secret.
         </Step>
 
@@ -135,8 +153,8 @@ function SIP() {
           to the Bedrock AgentCore runtime over a SigV4-presigned WebSocket. Both Twilio and Chime paths share
           the same relay backend and use G.711 μ-law audio.
         </p>
-        <div style={codeBlock}>{`Twilio: Phone -> Twilio PSTN -> SIP Trunk -> NLB -> drachtio -> bridge -> AgentCore
-Chime:  Phone -> Chime PSTN -> SMA Lambda -> Voice Connector -> NLB -> drachtio -> bridge -> AgentCore`}</div>
+        <CodeBlock>{`Twilio: Phone -> Twilio PSTN -> SIP Trunk -> NLB -> drachtio -> bridge -> AgentCore
+Chime:  Phone -> Chime PSTN -> SMA Lambda -> Voice Connector -> NLB -> drachtio -> bridge -> AgentCore`}</CodeBlock>
         <p style={{ marginTop: '10px', fontSize: '12px', color: '#64748b' }}>
           One call at a time is supported (fixed RTP port).
         </p>

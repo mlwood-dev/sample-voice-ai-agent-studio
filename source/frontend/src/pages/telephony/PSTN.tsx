@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 const card: React.CSSProperties = {
   background: '#f8fafc',
   border: '1px solid #e2e8f0',
@@ -26,6 +27,23 @@ const codeBlock: React.CSSProperties = {
   overflowX: 'auto',
   whiteSpace: 'pre',
 };
+
+
+function CodeBlock({ children }: { children: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <div style={{ position: 'relative', maxWidth: '100%', marginTop: 10 }}>
+      <pre style={{ ...codeBlock, margin: 0, maxWidth: '100%' }}>{children}</pre>
+      <button
+        type="button"
+        onClick={() => { navigator.clipboard.writeText(children).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); }); }}
+        style={{ position: 'absolute', top: 8, right: 8, background: '#1e293b', color: '#fff', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+      >
+        {copied ? 'Copied' : 'Copy'}
+      </button>
+    </div>
+  );
+}
 
 function Step({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
   return (
@@ -103,14 +121,14 @@ function PSTN() {
         <Step n={2} title="Configure the bridge">
           Run the interactive setup. It auto-detects your AgentCore runtime and stores the bridge config in AWS
           Secrets Manager — no secrets on disk. See <code>telephony/pstn/README.md</code>.
-          <div style={{ ...codeBlock, marginTop: '10px' }}>{`cd telephony/pstn
-./configure.sh`}</div>
+          <CodeBlock>{`cd telephony/pstn
+./configure.sh`}</CodeBlock>
         </Step>
 
         <Step n={3} title="Deploy and run the bridge">
           Deploy the container to your own account, starting it with the secret name from step 2:
-          <div style={{ ...codeBlock, marginTop: '10px' }}>{`CONFIG_SECRET_NAME=voice-agent-poc/pstn \\
-  uvicorn tac_server:app --host 0.0.0.0 --port 8080`}</div>
+          <CodeBlock>{`CONFIG_SECRET_NAME=voice-agent-poc/pstn \\
+  uvicorn tac_server:app --host 0.0.0.0 --port 8080`}</CodeBlock>
           The bridge's IAM role needs <code>secretsmanager:GetSecretValue</code> on that secret.
         </Step>
 
@@ -135,7 +153,7 @@ function PSTN() {
           share one number — callers hear a DTMF menu to pick which agent to talk to. The bridge presigns a
           SigV4 WebSocket to the Bedrock AgentCore runtime.
         </p>
-        <div style={codeBlock}>{`Phone -> Twilio PSTN -> Conversation Relay (WS) -> PSTN bridge -> AgentCore`}</div>
+        <CodeBlock>{`Phone -> Twilio PSTN -> Conversation Relay (WS) -> PSTN bridge -> AgentCore`}</CodeBlock>
       </div>
 
       {/* Docs */}
