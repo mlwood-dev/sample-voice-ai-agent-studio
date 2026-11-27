@@ -24,6 +24,11 @@ from aws_cdk import (
 )
 from constructs import Construct
 
+# Claude 3 Sonnet and Claude Sonnet 4 (2025-05-14) have reached end of life.
+# Current Claude Sonnet US inference profiles require an Anthropic use-case
+# form that is not on file in this account, so text generation uses US Nova Pro.
+BEDROCK_TEXT_MODEL_ID = "us.amazon.nova-pro-v1:0"
+
 
 class DemosStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, agent_stack=None, pre_stack=None, **kwargs):
@@ -205,7 +210,7 @@ class DemosStack(Stack):
             timeout=Duration.seconds(60),
             memory_size=256,
             environment={
-                "BEDROCK_MODEL_ID": "anthropic.claude-3-sonnet-20240229-v1:0",
+                "BEDROCK_MODEL_ID": BEDROCK_TEXT_MODEL_ID,
                 "BEDROCK_REGION": self.region,
             },
         )
@@ -235,7 +240,7 @@ class DemosStack(Stack):
             timeout=Duration.seconds(60),
             memory_size=256,
             environment={
-                "BEDROCK_MODEL_ID": "anthropic.claude-3-sonnet-20240229-v1:0",
+                "BEDROCK_MODEL_ID": BEDROCK_TEXT_MODEL_ID,
                 "BEDROCK_REGION": self.region,
             },
         )
@@ -867,6 +872,8 @@ class DemosStack(Stack):
             environment={
                 "CALL_HISTORY_TABLE": self.call_history_table.table_name,
                 "CALL_HISTORY_BUCKET": self.call_history_bucket.bucket_name,
+                "BEDROCK_MODEL_ID": BEDROCK_TEXT_MODEL_ID,
+                "BEDROCK_REGION": self.region,
             },
         )
 

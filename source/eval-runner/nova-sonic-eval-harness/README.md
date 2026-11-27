@@ -824,7 +824,7 @@ user_models:
     model_id: "us.anthropic.claude-haiku-4-5-20251001-v1:0"
     region: "us-west-2"
   claude-sonnet:
-    model_id: "us.anthropic.claude-sonnet-4-20250514-v1:0"
+    model_id: "us.anthropic.claude-sonnet-4-6"
     region: "us-west-2"
   gpt-oss:
     model_id: "openai.gpt-oss-20b-1:0"
@@ -843,7 +843,7 @@ judge_models:
     model_id: "global.anthropic.claude-opus-4-5-20251101-v1:0"
     region: "us-east-1"
   claude-sonnet:
-    model_id: "us.anthropic.claude-sonnet-4-20250514-v1:0"
+    model_id: "us.anthropic.claude-sonnet-4-6"
     region: "us-east-1"
 ```
 

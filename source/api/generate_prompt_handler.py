@@ -2,7 +2,7 @@
 Lambda handler for Generate System Prompt API.
 
 Takes workflow steps (nodes, edges, tools) from the conversation flow canvas
-and uses Amazon Bedrock (Claude) to compose a well-structured, production-quality
+and uses Amazon Bedrock to compose a well-structured, production-quality
 system prompt with example interaction flows.
 
 Handles:
@@ -15,7 +15,7 @@ import os
 import boto3
 
 BEDROCK_MODEL_ID = os.environ.get(
-    "BEDROCK_MODEL_ID", "anthropic.claude-3-sonnet-20240229-v1:0"
+    "BEDROCK_MODEL_ID", "us.amazon.nova-pro-v1:0"
 )
 BEDROCK_REGION = os.environ.get(
     "BEDROCK_REGION", os.environ.get("AWS_REGION", "us-east-1")
@@ -165,36 +165,28 @@ def build_workflow_description(nodes, edges, tools, context_info):
 
 
 def call_bedrock(workflow_description):
-    """Call Amazon Bedrock Claude to generate a formatted system prompt."""
-    messages = [
-        {
-            "role": "user",
-            "content": (
-                "Generate a production-ready system prompt for a voice agent based on "
-                "this conversation flow:\n\n"
-                f"{workflow_description}\n\n"
-                "Remember: output ONLY the system prompt text, ready to use as-is."
-            ),
-        }
-    ]
-
-    request_body = {
-        "anthropic_version": "bedrock-2023-05-31",
-        "max_tokens": 4000,
-        "system": SYSTEM_PROMPT,
-        "messages": messages,
-        "temperature": 0.6,
-    }
-
-    bedrock_response = bedrock.invoke_model(
+    """Call Amazon Bedrock to generate a formatted system prompt."""
+    bedrock_response = bedrock.converse(
         modelId=BEDROCK_MODEL_ID,
-        contentType="application/json",
-        accept="application/json",
-        body=json.dumps(request_body),
+        system=[{"text": SYSTEM_PROMPT}],
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "text": (
+                            "Generate a production-ready system prompt for a voice agent based on "
+                            "this conversation flow:\n\n"
+                            f"{workflow_description}\n\n"
+                            "Remember: output ONLY the system prompt text, ready to use as-is."
+                        )
+                    }
+                ],
+            }
+        ],
+        inferenceConfig={"maxTokens": 4000, "temperature": 0.6},
     )
-
-    response_body = json.loads(bedrock_response["body"].read())
-    content = response_body["content"][0]["text"]
+    content = bedrock_response["output"]["message"]["content"][0]["text"]
 
     # Strip any accidental markdown fences
     content = content.strip()

@@ -1,7 +1,7 @@
 """
 Lambda handler for Generate Agent Configuration API.
 
-Calls Amazon Bedrock (Claude) to generate a complete voice agent configuration
+Calls Amazon Bedrock to generate a complete voice agent configuration
 from a natural language use case description.
 
 Handles:
@@ -13,7 +13,7 @@ import os
 
 import boto3
 
-BEDROCK_MODEL_ID = os.environ.get("BEDROCK_MODEL_ID", "anthropic.claude-3-sonnet-20240229-v1:0")
+BEDROCK_MODEL_ID = os.environ.get("BEDROCK_MODEL_ID", "us.amazon.nova-pro-v1:0")
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION", os.environ.get("AWS_REGION", "us-east-1"))
 
 bedrock = boto3.client("bedrock-runtime", region_name=BEDROCK_REGION)
@@ -99,33 +99,28 @@ def handler(event, context):
 
 
 def call_bedrock(description: str) -> dict:
-    """Call Amazon Bedrock Claude to generate agent configuration."""
-    messages = [
-        {
-            "role": "user",
-            "content": f"Generate a voice agent configuration for the following use case:\n\n{description}",
-        }
-    ]
-
-    request_body = {
-        "anthropic_version": "bedrock-2023-05-31",
-        "max_tokens": 2000,
-        "system": SYSTEM_PROMPT,
-        "messages": messages,
-        "temperature": 0.7,
-    }
-
-    bedrock_response = bedrock.invoke_model(
+    """Call Amazon Bedrock to generate agent configuration."""
+    bedrock_response = bedrock.converse(
         modelId=BEDROCK_MODEL_ID,
-        contentType="application/json",
-        accept="application/json",
-        body=json.dumps(request_body),
+        system=[{"text": SYSTEM_PROMPT}],
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "text": (
+                            "Generate a voice agent configuration for the following use case:\n\n"
+                            f"{description}"
+                        )
+                    }
+                ],
+            }
+        ],
+        inferenceConfig={"maxTokens": 2000, "temperature": 0.7},
     )
+    content = bedrock_response["output"]["message"]["content"][0]["text"]
 
-    response_body = json.loads(bedrock_response["body"].read())
-    content = response_body["content"][0]["text"]
-
-    # Parse the JSON response from Claude
+    # Parse the JSON response from the model
     # Strip any markdown code fences if present
     content = content.strip()
     if content.startswith("```"):

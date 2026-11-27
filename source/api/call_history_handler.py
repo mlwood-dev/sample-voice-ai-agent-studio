@@ -219,25 +219,25 @@ def handler(event, context):
                 return response(400, {"error": "transcript and prompt are required"})
 
             bedrock_runtime = boto3.client("bedrock-runtime", region_name=REGION)
-            messages = [
-                {
-                    "role": "user",
-                    "content": f"{prompt}\n\nTranscript:\n{transcript_text}",
-                }
-            ]
-            bedrock_body = json.dumps({
-                "messages": messages,
-                "max_tokens": 2048,
-                "anthropic_version": "bedrock-2023-05-31",
-            })
-            bedrock_response = bedrock_runtime.invoke_model(
-                modelId="us.anthropic.claude-sonnet-4-20250514-v1:0",
-                contentType="application/json",
-                accept="application/json",
-                body=bedrock_body,
+            model_id = os.environ.get("BEDROCK_MODEL_ID", "us.amazon.nova-pro-v1:0")
+            bedrock_response = bedrock_runtime.converse(
+                modelId=model_id,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {"text": f"{prompt}\n\nTranscript:\n{transcript_text}"}
+                        ],
+                    }
+                ],
+                inferenceConfig={"maxTokens": 2048},
             )
-            result = json.loads(bedrock_response["body"].read())
-            analysis_text = result.get("content", [{}])[0].get("text", "")
+            analysis_text = (
+                bedrock_response.get("output", {})
+                .get("message", {})
+                .get("content", [{}])[0]
+                .get("text", "")
+            )
 
             return response(200, {"analysis": analysis_text})
 
