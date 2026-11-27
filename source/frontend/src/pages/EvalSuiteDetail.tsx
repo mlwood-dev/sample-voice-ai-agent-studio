@@ -382,7 +382,7 @@ function EvalSuiteDetail() {
               const result = job.summary?.overallRating;
               return (
                 <tr key={job.id} style={{ borderBottom: '1px solid #f1f5f9', cursor: 'pointer' }} onClick={() => navigate(`/agents/${suite.sourceAgentId || '_'}/evaluation/${job.id}`)}>
-                  <td style={{ padding: '12px', fontWeight: 500, color: '#6366f1' }} onClick={(e) => e.stopPropagation()}>
+                  <td data-label="Name" style={{ padding: '12px', fontWeight: 500, color: '#6366f1' }} onClick={(e) => e.stopPropagation()}>
                     {editingJobId === job.id ? (
                       <input
                         autoFocus
@@ -404,15 +404,15 @@ function EvalSuiteDetail() {
                       </span>
                     )}
                   </td>
-                  <td style={{ padding: '12px' }}>
+                  <td data-label="Status" style={{ padding: '12px' }}>
                     <span style={{ fontSize: '12px', padding: '2px 8px', background: c.bg, color: c.color, borderRadius: '4px' }}>
                       {job.status.charAt(0) + job.status.slice(1).toLowerCase()}
                     </span>
                   </td>
-                  <td style={{ padding: '12px', color: '#64748b', fontSize: '13px' }}>
+                  <td data-label="Model / Expert" style={{ padding: '12px', color: '#64748b', fontSize: '13px' }}>
                     {sonicModelId ? (sonicModelId.split('.').pop()?.split(':')[0] || sonicModelId) : 'Nova Sonic'}
                   </td>
-                  <td style={{ padding: '12px' }}>
+                  <td data-label="Result" style={{ padding: '12px' }}>
                     {result ? (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <span style={{ fontSize: '12px', padding: '2px 8px', borderRadius: '4px', background: result === 'PASS' ? '#f0fdf4' : '#fef2f2', color: result === 'PASS' ? '#16a34a' : '#dc2626', fontWeight: 600 }}>
@@ -426,8 +426,8 @@ function EvalSuiteDetail() {
                       </div>
                     ) : <span style={{ color: '#94a3b8', fontSize: '12px' }}>—</span>}
                   </td>
-                  <td style={{ padding: '12px', color: '#64748b' }}>{formatDate(job.createdAt)}</td>
-                  <td style={{ padding: '12px' }} onClick={(e) => e.stopPropagation()}>
+                  <td data-label="Created" style={{ padding: '12px', color: '#64748b' }}>{formatDate(job.createdAt)}</td>
+                  <td data-label="Actions" style={{ padding: '12px' }} onClick={(e) => e.stopPropagation()}>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                       <button title="Rename" onClick={() => { setEditedJobName(job.config.testName || ''); setEditingJobId(job.id); }} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: '4px', borderRadius: '4px', display: 'flex' }}>
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>

@@ -23,6 +23,7 @@ import type { RAGSource } from '../services/ragApi';
 import { generatePromptFromApi } from '../services/generatePrompt';
 import { WizardContext } from '../context/WizardContext';
 import { WorkflowStepData, WorkflowData, PREDEFINED_TEMPLATES, defaultEdgeOptions, INITIAL_NODES, INITIAL_EDGES, getNodeId } from './workflowUtils';
+import styles from './WorkflowCanvas.module.css';
 export type { WorkflowStepData, WorkflowData } from './workflowUtils';
 
 interface WorkflowCanvasProps {
@@ -617,9 +618,9 @@ function WorkflowCanvas({ onGenerate, initialData, initialPrompt, initialTools, 
   }, [nodes, edges, setNodes]);
 
   const canvasContent = (
-    <div style={{ display: 'flex', gap: '16px', height: fullscreen ? 'calc(100vh - 80px)' : undefined, flex: fullscreen ? undefined : 1, minHeight: 0 }}>
+    <div className={styles.shell} style={{ height: fullscreen ? 'calc(100dvh - 80px)' : undefined, flex: fullscreen ? undefined : 1, minHeight: 0 }}>
       {/* Left: Palette */}
-      <div style={{ width: '170px', flexShrink: 0, overflowY: 'auto' }}>
+      <div className={styles.palette} style={{ flexShrink: 0, overflowY: 'auto' }}>
         {/* Steps Section */}
         <div style={{ fontSize: '11px', fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.3px', marginBottom: '6px' }}>Steps</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '14px' }}>
@@ -797,7 +798,7 @@ function WorkflowCanvas({ onGenerate, initialData, initialPrompt, initialTools, 
       </div>
 
       {/* Center: React Flow Canvas */}
-      <div ref={reactFlowWrapper} style={{ flex: 1, border: '1px solid #e2e8f0', borderRadius: '10px', overflow: 'hidden', position: 'relative', background: '#f8fafc' }} onDrop={onDrop} onDragOver={onDragOver}>
+      <div ref={reactFlowWrapper} className={styles.canvas} onDrop={onDrop} onDragOver={onDragOver}>
         <div style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 10 }}>
           <button
             onClick={autoLayout}
@@ -841,7 +842,7 @@ function WorkflowCanvas({ onGenerate, initialData, initialPrompt, initialTools, 
       </div>
 
       {/* Right: Detail Panel */}
-      <div style={{ width: '260px', flexShrink: 0, overflowY: 'auto' }}>
+      <div className={styles.inspector} style={{ flexShrink: 0, overflowY: 'auto' }}>
         {selectedNode ? (
           <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '14px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>

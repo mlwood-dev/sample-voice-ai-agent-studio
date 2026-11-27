@@ -878,16 +878,18 @@ function POC() {
         {/* Webchat popup widget */}
         {(isRecording || connectionStatus === 'connected' || transcript.length > 0) && !chatPopupOpen && (
           <button
+            type="button"
+            className={styles.chatFab}
             onClick={() => setChatPopupOpen(true)}
-            style={{ position: 'fixed', bottom: '24px', right: '24px', width: '56px', height: '56px', borderRadius: '50%', background: '#6366f1', border: 'none', boxShadow: '0 4px 16px rgba(99,102,241,0.4)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}
+            aria-label="Open voice chat"
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           </button>
         )}
         {chatPopupOpen && (
-        <div style={{ position: 'fixed', bottom: '24px', right: '24px', width: '400px', height: '600px', background: '#fafbfc', borderRadius: '16px', boxShadow: '0 20px 60px rgba(0,0,0,0.2), 0 0 0 1px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', overflow: 'hidden', zIndex: 100 }}>
+        <div className={styles.chatPopup}>
           {/* Popup header */}
-          <div style={{ padding: '14px 20px', background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+          <div className={styles.chatHeader}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
@@ -1055,7 +1057,7 @@ function POC() {
                 }
               }}
               placeholder={connectionStatus === 'connected' ? 'Type a message...' : 'Connect first to chat'}
-              style={{ flex: 1, padding: '10px 14px', border: '1px solid #e2e8f0', borderRadius: '10px', fontSize: '13px', outline: 'none', background: '#f8fafc', transition: 'border-color 0.2s' }}
+              className={styles.chatInput}
               disabled={connectionStatus !== 'connected'}
             />
             <button
@@ -1067,27 +1069,30 @@ function POC() {
                 }
               }}
               disabled={!textInput.trim() || connectionStatus !== 'connected'}
-              style={{ padding: '10px 16px', background: (!textInput.trim() || connectionStatus !== 'connected') ? '#e2e8f0' : '#6366f1', border: 'none', borderRadius: '10px', color: 'white', fontSize: '13px', fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s', display: 'flex', alignItems: 'center' }}
+              className={styles.chatSendBtn}
+              style={{ background: (!textInput.trim() || connectionStatus !== 'connected') ? '#e2e8f0' : '#6366f1' }}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>
           </div>
 
           {/* Start/Stop controls */}
-          <div style={{ padding: '12px 16px', borderTop: '1px solid #f1f5f9', background: '#fafbfc', display: 'flex', justifyContent: 'center', flexShrink: 0, borderRadius: '0 0 20px 20px' }}>
+          <div className={styles.chatControls}>
             {!isRecording ? (
               <button
+                type="button"
+                className={styles.chatStartBtn}
                 onClick={handleStartConversation}
                 disabled={connectionStatus === 'connecting'}
-                style={{ padding: '10px 24px', background: connectionStatus === 'connecting' ? '#94a3b8' : 'linear-gradient(135deg, #10b981, #059669)', border: 'none', borderRadius: '10px', color: 'white', fontSize: '13px', fontWeight: 600, cursor: connectionStatus === 'connecting' ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 2px 8px rgba(16,185,129,0.3)' }}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
                 {connectionStatus === 'connecting' ? 'Connecting...' : 'Start Conversation'}
               </button>
             ) : (
               <button
+                type="button"
+                className={styles.chatStopBtn}
                 onClick={handleStopConversation}
-                style={{ padding: '10px 24px', background: 'linear-gradient(135deg, #ef4444, #dc2626)', border: 'none', borderRadius: '10px', color: 'white', fontSize: '13px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 2px 8px rgba(239,68,68,0.3)' }}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
                 End Conversation
@@ -1320,69 +1325,69 @@ function TechnicalReport({ state }: { state: any }) {
             </thead>
             <tbody>
               <tr>
-                <td>Runtime</td>
-                <td>Amazon Bedrock AgentCore</td>
-                <td>WebSocket server hosting the voice agent</td>
-                <td>us-east-1</td>
+                <td data-label="Component">Runtime</td>
+                <td data-label="Service">Amazon Bedrock AgentCore</td>
+                <td data-label="Purpose">WebSocket server hosting the voice agent</td>
+                <td data-label="Region">us-east-1</td>
               </tr>
               <tr>
-                <td>Agent Framework</td>
-                <td>Strands Agents SDK (BidiAgent)</td>
-                <td>Bidirectional streaming orchestration</td>
-                <td>—</td>
+                <td data-label="Component">Agent Framework</td>
+                <td data-label="Service">Strands Agents SDK (BidiAgent)</td>
+                <td data-label="Purpose">Bidirectional streaming orchestration</td>
+                <td data-label="Region">—</td>
               </tr>
               {state.pipeline === 'speech-to-speech' ? (
                 <tr>
-                  <td>Voice Model</td>
-                  <td>Amazon Nova Sonic</td>
-                  <td>End-to-end speech understanding and generation</td>
-                  <td>us-east-1</td>
+                  <td data-label="Component">Voice Model</td>
+                  <td data-label="Service">Amazon Nova Sonic</td>
+                  <td data-label="Purpose">End-to-end speech understanding and generation</td>
+                  <td data-label="Region">us-east-1</td>
                 </tr>
               ) : (
                 <>
                   <tr>
-                    <td>STT</td>
-                    <td>
+                    <td data-label="Component">STT</td>
+                    <td data-label="Service">
                       {state.cascaded.sttProvider === 'transcribe'
                         ? 'Amazon Transcribe'
                         : 'Deepgram'}
                     </td>
-                    <td>Real-time speech-to-text transcription</td>
-                    <td>us-east-1</td>
+                    <td data-label="Purpose">Real-time speech-to-text transcription</td>
+                    <td data-label="Region">us-east-1</td>
                   </tr>
                   <tr>
-                    <td>LLM</td>
-                    <td>
+                    <td data-label="Component">LLM</td>
+                    <td data-label="Service">
                       {state.cascaded.llmProvider === 'nova-lite'
                         ? 'Amazon Nova Lite (Bedrock)'
                         : 'GPT (via Bedrock)'}
                     </td>
-                    <td>Natural language understanding and response generation</td>
-                    <td>us-east-1</td>
+                    <td data-label="Purpose">Natural language understanding and response generation</td>
+                    <td data-label="Region">us-east-1</td>
                   </tr>
                   <tr>
-                    <td>TTS</td>
-                    <td>
+                    <td data-label="Component">TTS</td>
+                    <td data-label="Service">
                       {state.cascaded.ttsProvider === 'polly'
                         ? 'Amazon Polly'
                         : 'Eleven Labs'}
                     </td>
-                    <td>Text-to-speech synthesis</td>
-                    <td>us-east-1</td>
+                    <td data-label="Purpose">Text-to-speech synthesis</td>
+                    <td data-label="Region">us-east-1</td>
                   </tr>
                 </>
               )}
               <tr>
-                <td>Transport</td>
-                <td>WebSocket (WSS)</td>
-                <td>Bidirectional audio streaming</td>
-                <td>—</td>
+                <td data-label="Component">Transport</td>
+                <td data-label="Service">WebSocket (WSS)</td>
+                <td data-label="Purpose">Bidirectional audio streaming</td>
+                <td data-label="Region">—</td>
               </tr>
               <tr>
-                <td>Client Audio</td>
-                <td>Web Audio API + MediaStream</td>
-                <td>Microphone capture (16kHz PCM) and playback (24kHz)</td>
-                <td>—</td>
+                <td data-label="Component">Client Audio</td>
+                <td data-label="Service">Web Audio API + MediaStream</td>
+                <td data-label="Purpose">Microphone capture (16kHz PCM) and playback (24kHz)</td>
+                <td data-label="Region">—</td>
               </tr>
             </tbody>
           </table>

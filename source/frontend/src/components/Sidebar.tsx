@@ -14,9 +14,11 @@ interface SidebarProps {
   user?: { email: string; username?: string } | null;
   logout?: () => void;
   onArchOpen?: () => void;
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
 }
 
-function Sidebar({ user, logout, onArchOpen }: SidebarProps) {
+function Sidebar({ user, logout, onArchOpen, mobileOpen = false, onMobileClose }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [integrationsOpen, setIntegrationsOpen] = useState(true);
   const [telephonyOpen, setTelephonyOpen] = useState(true);
@@ -91,12 +93,18 @@ function Sidebar({ user, logout, onArchOpen }: SidebarProps) {
   }, [location.pathname, refreshDemos, refreshEvalSuites]);
 
   useEffect(() => {
+    onMobileClose?.();
+    // Close the phone drawer after navigation; ignore callback identity.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
+
+  useEffect(() => {
     return onAgentListChanged(refreshDemos);
   }, [refreshDemos]);
 
   return (
     <>
-      <aside className={`${styles.sidebar} ${collapsed ? styles.collapsed : ''}`}>
+      <aside className={`${styles.sidebar} ${collapsed ? styles.collapsed : ''} ${mobileOpen ? styles.drawerOpen : ''}`} >
         {/* Logo / Title at top */}
         {!collapsed && (
           <div className={styles.logoSection}>
@@ -121,9 +129,21 @@ function Sidebar({ user, logout, onArchOpen }: SidebarProps) {
               </span>
             </Link>
             <button
+              type="button"
+              className={styles.closeDrawerBtn}
+              onClick={onMobileClose}
+              aria-label="Close menu"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              className={styles.desktopToggle}
               onClick={() => setCollapsed(!collapsed)}
               aria-label="Collapse sidebar"
-              style={{ background: 'none', border: 'none', padding: '4px', color: '#94a3b8', cursor: 'pointer', flexShrink: 0 }}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="15 18 9 12 15 6" />
@@ -137,9 +157,10 @@ function Sidebar({ user, logout, onArchOpen }: SidebarProps) {
               <img src="/favicon.svg" alt="Everwood Technologies" width="28" height="28" />
             </Link>
             <button
+              type="button"
+              className={styles.desktopToggle}
               onClick={() => setCollapsed(!collapsed)}
               aria-label="Expand sidebar"
-              style={{ background: 'none', border: 'none', padding: '4px', color: '#94a3b8', cursor: 'pointer' }}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="9 18 15 12 9 6" />
